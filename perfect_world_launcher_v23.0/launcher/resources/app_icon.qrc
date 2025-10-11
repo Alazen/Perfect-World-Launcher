@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/launcher/icons">
+        <file alias="pw_launcher_icon_3.ico">../../../assets/pw_launcher_icon_3.ico</file>
+    </qresource>
+</RCC>
