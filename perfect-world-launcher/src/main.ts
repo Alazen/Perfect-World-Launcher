@@ -69,23 +69,25 @@ function render() {
     appEl.innerHTML = `
         <header style="background: transparent; border: none; box-shadow: none; padding: 24px 32px 12px 32px;">
             <div style="display: flex; gap: 12px; align-items: center; justify-content: flex-start; width: 100%;">
-                <button id="btn-import">Import Settings</button>
-                <button id="btn-export">Export Settings</button>
+                <button id="btn-add-server">Add Server</button>
                 
-                <div style="display: flex; align-items: center; gap: 12px; margin-left: auto;">
-                    <label style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Delay (s):</label>
-                    <span style="font-size: 13px; width: 16px; text-align: center; color: var(--text-white); font-weight: 600;">${currentState.delay}</span>
-                    <button id="btn-delay-dec" style="padding: 0; width: 40px; display: flex; align-items: center; justify-content: center; font-size: 20px;">-</button>
-                    <button id="btn-delay-inc" style="padding: 0; width: 40px; display: flex; align-items: center; justify-content: center; font-size: 20px;">+</button>
+                <div style="display: flex; align-items: center; margin-left: auto;">
+                    <label style="font-size: 12px; color: var(--text-muted); font-weight: 500; margin-right: 12px;">Delay (s):</label>
+                    <span style="font-size: 13px; width: 16px; text-align: center; color: var(--text-white); font-weight: 600; margin-right: 12px;">${currentState.delay}</span>
+                    <div style="display: flex; align-items: center; background: var(--btn-surface); border-radius: 9999px; overflow: hidden; border: 1px solid var(--border-subtle);">
+                        <button id="btn-delay-dec" style="padding: 0; width: 40px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 0; border: none; background: transparent; border-right: 1px solid rgba(255,255,255,0.05);">-</button>
+                        <button id="btn-delay-inc" style="padding: 0; width: 40px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 0; border: none; background: transparent;">+</button>
+                    </div>
                 </div>
             </div>
         </header>
 
         <main class="content-area" id="server-list" style="padding: 0 32px;"></main>
 
-        <footer style="background: transparent; border: none; box-shadow: none; padding: 16px 32px 32px 32px; display: flex; gap: 16px; align-items: stretch;">
+        <footer style="background: transparent; border: none; box-shadow: none; padding: 16px 32px 32px 32px; display: flex; gap: 12px; align-items: stretch;">
             <button id="btn-start-all" class="btn-success" style="flex: 1.5; font-size: 16px; box-shadow: 0 4px 14px rgba(48, 213, 252, 0.2);">Start ${activeAccountsCount} accounts</button>
-            <button id="btn-add-server" style="flex: 1;">Add Server</button>
+            <button id="btn-import" style="flex: 1;">Import Settings</button>
+            <button id="btn-export" style="flex: 1;">Export Settings</button>
             <button id="btn-save-close" style="flex: 1;">Save and Close</button>
             <button id="btn-toggle-log" style="flex: 1;">${logVisible ? "Hide Log" : "Show Log"}</button>
         </footer>

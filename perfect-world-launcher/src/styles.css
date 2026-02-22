@@ -99,11 +99,12 @@ header {
 main.content-area {
   flex: 1;
   overflow-y: overlay;
+  scrollbar-gutter: stable;
   /* WebKit custom scrollbar support */
   padding: 24px 32px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 12px;
 }
 
 footer {
@@ -250,7 +251,7 @@ input:focus {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 24px;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   box-shadow: var(--shadow-lg);
   transition: border-color 0.3s ease;
 }
