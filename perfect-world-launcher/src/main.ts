@@ -59,6 +59,37 @@ function fullReRender() {
     render();
 }
 
+function viewTransitionRender() {
+    requestSave();
+    if (document.startViewTransition) {
+        document.startViewTransition(() => render());
+    } else {
+        render();
+    }
+}
+
+function updateStartAllButton() {
+    let activeAccountsCount = 0;
+    currentState.servers.forEach(s => {
+        s.accounts.forEach(a => { if (a.run) activeAccountsCount++; });
+    });
+    const btn = document.getElementById("btn-start-all");
+    if (btn) btn.innerText = `Start ${activeAccountsCount} accounts`;
+}
+
+function setLogVisible(visible: boolean) {
+    logVisible = visible;
+    const panel = document.getElementById("log-panel");
+    const btn = document.getElementById("btn-toggle-log");
+    if (visible) {
+        panel?.classList.add("visible");
+        if (btn) btn.innerText = "Hide Log";
+    } else {
+        panel?.classList.remove("visible");
+        if (btn) btn.innerText = "Show Log";
+    }
+}
+
 // --- Render Engine ---
 function render() {
     let activeAccountsCount = 0;
@@ -67,16 +98,16 @@ function render() {
     });
 
     appEl.innerHTML = `
-        <header style="background: transparent; border: none; box-shadow: none; padding: 24px 32px 12px 32px;">
+        <header style="background: transparent; border: none; box-shadow: none; padding: 24px 42px 12px 32px;">
             <div style="display: flex; gap: 12px; align-items: center; justify-content: flex-start; width: 100%;">
                 <button id="btn-add-server">Add Server</button>
                 
                 <div style="display: flex; align-items: center; margin-left: auto;">
                     <label style="font-size: 12px; color: var(--text-muted); font-weight: 500; margin-right: 12px;">Delay (s):</label>
-                    <span style="font-size: 13px; width: 16px; text-align: center; color: var(--text-white); font-weight: 600; margin-right: 12px;">${currentState.delay}</span>
-                    <div style="display: flex; align-items: center; background: var(--btn-surface); border-radius: 9999px; overflow: hidden; border: 1px solid var(--border-subtle);">
-                        <button id="btn-delay-dec" style="padding: 0; width: 40px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 0; border: none; border-right: 1px solid rgba(255,255,255,0.05);">-</button>
-                        <button id="btn-delay-inc" style="padding: 0; width: 40px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 0; border: none;">+</button>
+                    <span id="delay-val" style="font-size: 13px; width: 16px; text-align: center; color: var(--text-white); font-weight: 600; margin-right: 12px;">${currentState.delay}</span>
+                    <div style="display: flex; align-items: center; background: var(--btn-surface); border-radius: 9999px; overflow: hidden; border: 1px solid var(--border-subtle); height: 40px;">
+                        <button id="btn-delay-dec" style="padding: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 0; border: none; border-right: 1px solid rgba(255,255,255,0.05);"><span style="margin-top: -2px;">-</span></button>
+                        <button id="btn-delay-inc" style="padding: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 0; border: none;"><span style="margin-top: -2px;">+</span></button>
                     </div>
                 </div>
             </div>
@@ -92,10 +123,9 @@ function render() {
             <button id="btn-toggle-log" style="flex: 1;">${logVisible ? "Hide Log" : "Show Log"}</button>
         </footer>
 
-        <div class="log-panel ${logVisible ? 'visible' : ''}" id="log-panel" style="bottom: 90px; left: 32px; width: 400px; background: #16181A; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
+        <div class="log-panel ${logVisible ? 'visible' : ''}" id="log-panel" style="bottom: 90px; right: 42px; width: 600px; background: #16181A; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
                 <span style="font-weight: 600; color: var(--text-white)">Launch Log</span>
-                <button id="btn-close-log" style="padding: 2px 8px; font-size: 11px">Close</button>
             </div>
             <div class="log-content" id="log-content"></div>
         </div>
@@ -130,7 +160,6 @@ function render() {
                 <button class="btn-toggle-srv" data-srv="${serverIdx}" style="border: none; font-weight: 700; border-radius: 9999px; color: white; width: 100px;">${toggleBtnText}</button>
                 <input type="text" class="server-name" data-srv="${serverIdx}" value="${escapeHtml(server.name)}" placeholder="Server name" style="flex: 1; max-width: 600px; font-size: 13px; border-radius: 9999px;" />
                 <button class="btn-primary btn-play-srv" data-srv="${serverIdx}" style="font-size: 13px; font-weight: 700; border-radius: 9999px;">Play ${escapeHtml(server.name)}</button>
-                <button class="btn-danger btn-del-srv" data-srv="${serverIdx}" style="font-size: 13px; border-radius: 9999px; color: white;">Remove ${escapeHtml(server.name)}</button>
             </div>
             
             <div class="expand-container ${isExpanded ? 'expanded' : ''}">
@@ -152,8 +181,9 @@ function render() {
                         </div>
                         ${accountsHtml}
                     </div>
-                    <div style="margin-top: 24px;">
+                    <div style="margin-top: 24px; display: flex; gap: 12px; align-items: center;">
                         <button class="btn-add-acc" data-srv="${serverIdx}" style="border: none; font-weight: 600; border-radius: 9999px; color: white;">Add Account</button>
+                        <button class="btn-danger btn-del-srv" data-srv="${serverIdx}" style="font-size: 13px; border: none; font-weight: 600; border-radius: 9999px; color: white;">Remove ${escapeHtml(server.name)}</button>
                     </div>
                     <div style="margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.02); margin-left: -24px; margin-right: -24px; margin-bottom: -24px;"></div>
                 </div>
@@ -209,12 +239,16 @@ function attachListeners() {
     // Top Controls
     document.getElementById("btn-delay-inc")?.addEventListener("click", () => {
         currentState.delay = Math.min(60, currentState.delay + 1);
-        fullReRender();
+        const span = document.getElementById("delay-val");
+        if (span) span.innerText = currentState.delay.toString();
+        requestSave();
     });
 
     document.getElementById("btn-delay-dec")?.addEventListener("click", () => {
         currentState.delay = Math.max(0, currentState.delay - 1);
-        fullReRender();
+        const span = document.getElementById("delay-val");
+        if (span) span.innerText = currentState.delay.toString();
+        requestSave();
     });
 
     document.getElementById("btn-save-close")?.addEventListener("click", async () => {
@@ -227,13 +261,7 @@ function attachListeners() {
     });
 
     document.getElementById("btn-toggle-log")?.addEventListener("click", () => {
-        logVisible = !logVisible;
-        render(); // Cheap enough to re-render for UI updates
-    });
-
-    document.getElementById("btn-close-log")?.addEventListener("click", () => {
-        logVisible = false;
-        render();
+        setLogVisible(!logVisible);
     });
 
     // Server list actions
@@ -261,14 +289,14 @@ function attachListeners() {
     });
     document.getElementById("btn-add-server")?.addEventListener("click", () => {
         currentState.servers.push({ name: "New Server", client_path: "", accounts: [] });
-        fullReRender();
+        viewTransitionRender();
     });
 
     document.querySelectorAll(".btn-del-srv").forEach(btn => {
         btn.addEventListener("click", (e) => {
             const idx = parseInt((e.target as HTMLElement).getAttribute("data-srv")!);
             currentState.servers.splice(idx, 1);
-            fullReRender();
+            viewTransitionRender();
         });
     });
 
@@ -277,7 +305,7 @@ function attachListeners() {
         btn.addEventListener("click", (e) => {
             const idx = parseInt((e.target as HTMLElement).getAttribute("data-srv")!);
             currentState.servers[idx].accounts.push({ run: true, login: "", password: "", character: "" });
-            fullReRender();
+            viewTransitionRender();
         });
     });
 
@@ -286,7 +314,7 @@ function attachListeners() {
             const srv = parseInt((e.target as HTMLElement).getAttribute("data-srv")!);
             const acc = parseInt((e.target as HTMLElement).getAttribute("data-acc")!);
             currentState.servers[srv].accounts.splice(acc, 1);
-            fullReRender();
+            viewTransitionRender();
         });
     });
 
@@ -302,7 +330,8 @@ function attachListeners() {
                     const acc = parseInt(accAttr);
                     if (field === 'run') {
                         currentState.servers[srv].accounts[acc].run = target.checked;
-                        fullReRender(); // Re-render to update the total start button count
+                        updateStartAllButton();
+                        requestSave();
                     } else {
                         // @ts-ignore
                         currentState.servers[srv].accounts[acc][field] = target.value;
@@ -311,6 +340,13 @@ function attachListeners() {
                 } else {
                     // @ts-ignore
                     currentState.servers[srv][field] = target.value;
+                    if (field === 'name') {
+                        const srvName = escapeHtml(target.value || "New Server");
+                        const playBtn = document.querySelector(`.btn-play-srv[data-srv="${srv}"]`);
+                        const delBtn = document.querySelector(`.btn-del-srv[data-srv="${srv}"]`);
+                        if (playBtn) playBtn.innerHTML = `Play ${srvName}`;
+                        if (delBtn) delBtn.innerHTML = `Remove ${srvName}`;
+                    }
                     requestSave();
                 }
             });
@@ -341,7 +377,7 @@ function attachListeners() {
     });
 
     document.getElementById("btn-start-all")?.addEventListener("click", async () => {
-        logVisible = true; render();
+        setLogVisible(true);
         logMsg("Starting global sequential launch...");
         await invoke("launch_all");
     });
@@ -349,7 +385,7 @@ function attachListeners() {
     document.querySelectorAll(".btn-play-srv").forEach(btn => {
         btn.addEventListener("click", async (e) => {
             const srv = parseInt((e.target as HTMLElement).getAttribute("data-srv")!);
-            logVisible = true; render();
+            setLogVisible(true);
             logMsg(`Starting server ${currentState.servers[srv].name}...`);
             await invoke("launch_server", { serverIndex: srv });
         });
@@ -360,7 +396,7 @@ function attachListeners() {
             const target = e.target as HTMLElement;
             const srv = parseInt(target.getAttribute("data-srv")!);
             const acc = parseInt(target.getAttribute("data-acc")!);
-            logVisible = true; render();
+            setLogVisible(true);
             logMsg(`Launching ${currentState.servers[srv].accounts[acc].character}...`);
             await invoke("launch_account", { serverIndex: srv, accountIndex: acc });
         });
