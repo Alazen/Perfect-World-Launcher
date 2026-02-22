@@ -124,41 +124,39 @@ function render() {
         const toggleBtnText = isExpanded ? "Hide" : "Show";
 
         let innerHTML = `
-            <div class="server-header" style="margin-bottom: ${isExpanded ? '24px' : '0'}; display: flex; gap: 16px; align-items: center; justify-content: flex-start;">
+            <div class="server-header" style="transition: margin-bottom 0.3s ease-in-out; margin-bottom: ${isExpanded ? '24px' : '0'}; display: flex; gap: 16px; align-items: center; justify-content: flex-start;">
                 <button class="btn-toggle-srv" data-srv="${serverIdx}" style="background: var(--btn-surface); border: none; font-weight: 700; border-radius: 9999px; color: white; width: 100px;">${toggleBtnText}</button>
                 <input type="text" class="server-name" data-srv="${serverIdx}" value="${escapeHtml(server.name)}" placeholder="Server name" style="flex: 1; max-width: 600px; background: var(--bg-input); font-size: 13px; border: 1px solid rgba(255,255,255,0.03); border-radius: 9999px;" />
                 <button class="btn-primary btn-play-srv" data-srv="${serverIdx}" style="font-size: 13px; font-weight: 700; border-radius: 9999px;">Play ${escapeHtml(server.name)}</button>
                 <button class="btn-danger btn-del-srv" data-srv="${serverIdx}" style="font-size: 13px; border-radius: 9999px; background: var(--btn-surface); color: white;">Remove ${escapeHtml(server.name)}</button>
             </div>
-        `;
-
-        if (isExpanded) {
-            innerHTML += `
-            <div class="reveal-anim">
-                <div class="client-path-row" style="background: transparent; padding: 0; margin-bottom: 24px; border: none; gap: 16px;">
-                    <label style="font-weight: 600; font-size: 12px; color: var(--text-muted); white-space: nowrap; width: 140px; text-align: left; padding-left: 12px;">Client Path Server ${serverIdx + 1}:</label>
-                    <input type="text" class="server-path" data-srv="${serverIdx}" value="${escapeHtml(server.client_path)}" placeholder="Select elementclient.exe" style="flex: 1; max-width: -webkit-fill-available; background: var(--bg-input); border: 1px solid rgba(255,255,255,0.03); padding: 0 16px; height: 40px; border-radius: 9999px;"/>
-                    <button class="btn-browse" data-srv="${serverIdx}" style="background: var(--btn-surface); border: none; font-weight: 600; border-radius: 9999px; color: white;">Browse</button>
-                </div>
             
-            <div class="accounts-grid" style="border: none; background: transparent;">
-                <div class="table-header">
-                    <div class="center">Run?</div>
-                    <div class="center">Play</div>
-                    <div>Login</div>
-                    <div>Password</div>
-                    <div>Character</div>
-                    <div class="center">Remove</div>
+            <div class="expand-container ${isExpanded ? 'expanded' : ''}">
+                <div class="expand-content">
+                    <div class="client-path-row" style="background: transparent; padding: 0; margin-bottom: 24px; border: none; gap: 16px;">
+                        <label style="font-weight: 600; font-size: 12px; color: var(--text-muted); white-space: nowrap; width: 140px; text-align: left; padding-left: 12px;">Client Path Server ${serverIdx + 1}:</label>
+                        <input type="text" class="server-path" data-srv="${serverIdx}" value="${escapeHtml(server.client_path)}" placeholder="Select elementclient.exe" style="flex: 1; max-width: -webkit-fill-available; background: var(--bg-input); border: 1px solid rgba(255,255,255,0.03); padding: 0 16px; height: 40px; border-radius: 9999px;"/>
+                        <button class="btn-browse" data-srv="${serverIdx}" style="background: var(--btn-surface); border: none; font-weight: 600; border-radius: 9999px; color: white;">Browse</button>
+                    </div>
+                
+                    <div class="accounts-grid" style="border: none; background: transparent;">
+                        <div class="table-header">
+                            <div class="center">Run?</div>
+                            <div class="center">Play</div>
+                            <div>Login</div>
+                            <div>Password</div>
+                            <div>Character</div>
+                            <div class="center">Remove</div>
+                        </div>
+                        ${accountsHtml}
+                    </div>
+                    <div style="margin-top: 24px;">
+                        <button class="btn-add-acc" data-srv="${serverIdx}" style="background: var(--btn-surface); border: none; font-weight: 600; border-radius: 9999px; color: white;">Add Account</button>
+                    </div>
+                    <div style="margin-top: 32px; border-top: 1px solid rgba(255,255,255,0.02); margin-left: -24px; margin-right: -24px; margin-bottom: -24px;"></div>
                 </div>
-                ${accountsHtml}
-            </div>
-            <div style="margin-top: 24px;">
-                <button class="btn-add-acc" data-srv="${serverIdx}" style="background: var(--btn-surface); border: none; font-weight: 600; border-radius: 9999px; color: white;">Add Account</button>
-            </div>
-            <div style="margin-top: 32px; border-top: 1px solid rgba(255,255,255,0.02); margin-left: -24px; margin-right: -24px; margin-bottom: -24px;"></div>
             </div>
         `;
-        }
 
         card.innerHTML = innerHTML;
         serverListEl.appendChild(card);
@@ -240,12 +238,23 @@ function attachListeners() {
     document.querySelectorAll(".btn-toggle-srv").forEach(btn => {
         btn.addEventListener("click", (e) => {
             const idx = parseInt((e.target as HTMLElement).getAttribute("data-srv")!);
+            const targetBtn = e.target as HTMLElement;
+            const serverCard = targetBtn.closest(".server-card");
+            const expandContainer = serverCard?.querySelector(".expand-container");
+            const header = serverCard?.querySelector(".server-header") as HTMLElement;
+
             if (expandedServers.has(idx)) {
                 expandedServers.delete(idx);
+                targetBtn.innerText = "Show";
+                if (expandContainer) expandContainer.classList.remove("expanded");
+                if (header) header.style.marginBottom = "0";
             } else {
                 expandedServers.add(idx);
+                targetBtn.innerText = "Hide";
+                if (expandContainer) expandContainer.classList.add("expanded");
+                if (header) header.style.marginBottom = "24px";
             }
-            render();
+            // Skipping render() call to allow CSS grid transitions to run
         });
     });
     document.getElementById("btn-add-server")?.addEventListener("click", () => {

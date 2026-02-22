@@ -200,20 +200,19 @@ input[type="password"] {
   width: 100%;
 }
 
-@keyframes slideDownReveal {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.expand-container {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.reveal-anim {
-  animation: slideDownReveal 0.2s cubic-bezier(0.2, 0.0, 0, 1.0) forwards;
+.expand-container.expanded {
+  grid-template-rows: 1fr;
+}
+
+.expand-content {
+  overflow: hidden;
+  min-height: 0;
 }
 
 input:focus {
