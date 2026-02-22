@@ -1,0 +1,45 @@
+use std::process::Command;
+use std::path::Path;
+use tauri::{AppHandle, Emitter};
+use std::thread;
+use std::time::Duration;
+use crate::models::{Account, Server};
+
+pub fn launch_target_accounts(app: AppHandle, mut targets: Vec<(Server, Account)>, delay: u64) {
+    std::thread::spawn(move || {
+        let total = targets.len();
+        for (i, (server, account)) in targets.drain(..).enumerate() {
+            let _ = app.emit("launch-log", format!("Starting ({}/{}) - Server: {} - Account: {}", i + 1, total, server.name, account.character));
+            
+            // Argument assembly matches Python original
+            let arg_string = format!(
+                "user:{} pwd:{} role:{}",
+                account.login, account.password, account.character
+            );
+
+            let client_path = Path::new(&server.client_path);
+            let parent_dir = client_path.parent().unwrap_or(Path::new(""));
+
+            match Command::new(&server.client_path)
+                .arg("startbypatcher")
+                .arg(&arg_string)
+                .current_dir(parent_dir)
+                .spawn()
+            {
+                Ok(_) => {
+                    let _ = app.emit("launch-log", format!("Successfully launched {}", account.character));
+                },
+                Err(e) => {
+                    let _ = app.emit("launch-log", format!("Failed to launch {}: {}", account.character, e));
+                }
+            }
+
+            // Sleep if not the last account
+            if i < total - 1 {
+                let _ = app.emit("launch-log", format!("Waiting {} seconds...", delay));
+                thread::sleep(Duration::from_secs(delay));
+            }
+        }
+        let _ = app.emit("launch-log", "Launch sequence complete.".to_string());
+    });
+}
