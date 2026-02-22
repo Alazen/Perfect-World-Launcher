@@ -16,9 +16,21 @@ type Server = {
     accounts: Account[];
 };
 
+// Internal UI state flags
+type AccountWithUIState = Account & {
+    _isNew?: boolean;
+    _isRemoving?: boolean;
+};
+
+type ServerWithUIState = Omit<Server, 'accounts'> & {
+    accounts: AccountWithUIState[];
+    _isNew?: boolean;
+    _isRemoving?: boolean;
+};
+
 type Settings = {
     delay: number;
-    servers: Server[];
+    servers: ServerWithUIState[];
 };
 
 // --- State Management ---
@@ -59,14 +71,7 @@ function fullReRender() {
     render();
 }
 
-function viewTransitionRender() {
-    requestSave();
-    if (document.startViewTransition) {
-        document.startViewTransition(() => render());
-    } else {
-        render();
-    }
-}
+
 
 function updateStartAllButton() {
     let activeAccountsCount = 0;
@@ -115,21 +120,21 @@ function render() {
 
         <main class="content-area" id="server-list"></main>
 
-        <footer style="background: transparent; border: none; box-shadow: none; padding: 16px 32px 32px 32px; display: flex; gap: 12px; align-items: stretch;">
-            <button id="btn-start-all" class="btn-success" style="flex: 1.5; font-size: 16px; box-shadow: 0 4px 14px rgba(48, 213, 252, 0.2);">Start ${activeAccountsCount} accounts</button>
+        <footer style="background: transparent; border: none; box-shadow: none; padding: 16px 42px 32px 32px; display: flex; gap: 12px; align-items: stretch;">
+            <button id="btn-start-all" class="btn-success" style="flex: 1.5; box-shadow: 0 4px 14px rgba(48, 213, 252, 0.2);">Start ${activeAccountsCount} accounts</button>
             <button id="btn-import" style="flex: 1;">Import Settings</button>
             <button id="btn-export" style="flex: 1;">Export Settings</button>
             <button id="btn-save-close" style="flex: 1;">Save and Close</button>
             <button id="btn-toggle-log" style="flex: 1;">${logVisible ? "Hide Log" : "Show Log"}</button>
         </footer>
 
-        <div class="log-panel ${logVisible ? 'visible' : ''}" id="log-panel" style="bottom: 90px; right: 42px; width: 600px; background: #16181A; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
+        <div class="log-panel ${logVisible ? 'visible' : ''}" id="log-panel" style="width: 600px; background: #16181A; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
                 <span style="font-weight: 600; color: var(--text-white)">Launch Log</span>
             </div>
             <div class="log-content" id="log-content"></div>
         </div>
-        <div style="position: absolute; bottom: 12px; left: 32px; font-size: 12px; color: var(--text-muted); font-family: monospace;" id="mini-log">
+        <div style="position: absolute; bottom: 12px; right: 42px; font-size: 12px; color: var(--text-muted); font-family: monospace; text-align: right;" id="mini-log">
             [${new Date().toLocaleTimeString('en-GB')}] Settings loaded
         </div>
     `;
@@ -139,8 +144,13 @@ function render() {
     currentState.servers.forEach((server, serverIdx) => {
         const isExpanded = expandedServers.has(serverIdx);
 
-        let accountsHtml = server.accounts.map((acc, accIdx) => `
-            <div class="account-row">
+        let accountsHtml = server.accounts.map((acc, accIdx) => {
+            let rowClass = "account-row";
+            if (acc._isNew) rowClass += " slide-down-in";
+            else if (acc._isRemoving) rowClass += " slide-up-out";
+
+            return `
+            <div class="${rowClass}">
                 <div class="center"><input type="checkbox" class="run-checkbox" data-srv="${serverIdx}" data-acc="${accIdx}" ${acc.run ? 'checked' : ''} /></div>
                 <div class="center"><button class="btn-primary btn-play-acc" data-srv="${serverIdx}" data-acc="${accIdx}" style="width: 100%; border-radius: 9999px;">Play</button></div>
                 <div><input type="text" class="acc-login" data-srv="${serverIdx}" data-acc="${accIdx}" value="${escapeHtml(acc.login)}" placeholder="Login"/></div>
@@ -148,10 +158,17 @@ function render() {
                 <div><input type="text" class="acc-char" data-srv="${serverIdx}" data-acc="${accIdx}" value="${escapeHtml(acc.character)}" placeholder="Character"/></div>
                 <div class="center"><button class="btn-danger btn-del-acc" data-srv="${serverIdx}" data-acc="${accIdx}" style="width: 100%; border-radius: 9999px; color: white;">Remove</button></div>
             </div>
-        `).join("");
+            `;
+        }).join("");
+
+        let cardClass = "server-card";
+        if (server._isNew) cardClass += " slide-down-in";
+        else if (server._isRemoving) cardClass += " slide-up-out";
 
         const card = document.createElement("div");
-        card.className = "server-card";
+        card.className = cardClass;
+        card.draggable = true;
+        card.dataset.srvIndex = serverIdx.toString();
 
         const toggleBtnText = isExpanded ? "Hide" : "Show";
 
@@ -288,15 +305,35 @@ function attachListeners() {
         });
     });
     document.getElementById("btn-add-server")?.addEventListener("click", () => {
-        currentState.servers.push({ name: "New Server", client_path: "", accounts: [] });
-        viewTransitionRender();
+        currentState.servers.push({
+            name: "New Server",
+            client_path: "",
+            accounts: [{ run: true, login: "", password: "", character: "" }],
+            _isNew: true
+        });
+        render();
+        const srvIdx = currentState.servers.length - 1;
+        setTimeout(() => {
+            currentState.servers[srvIdx]._isNew = false;
+        }, 400); // Wait for transition
     });
 
     document.querySelectorAll(".btn-del-srv").forEach(btn => {
         btn.addEventListener("click", (e) => {
             const idx = parseInt((e.target as HTMLElement).getAttribute("data-srv")!);
-            currentState.servers.splice(idx, 1);
-            viewTransitionRender();
+            currentState.servers[idx]._isRemoving = true;
+            render();
+            setTimeout(() => {
+                currentState.servers.splice(idx, 1);
+                // Adjust expandedServers indexes backwards
+                const newExpanded = new Set<number>();
+                expandedServers.forEach(v => {
+                    if (v < idx) newExpanded.add(v);
+                    if (v > idx) newExpanded.add(v - 1);
+                });
+                expandedServers = newExpanded;
+                render();
+            }, 400);
         });
     });
 
@@ -304,8 +341,14 @@ function attachListeners() {
     document.querySelectorAll(".btn-add-acc").forEach(btn => {
         btn.addEventListener("click", (e) => {
             const idx = parseInt((e.target as HTMLElement).getAttribute("data-srv")!);
-            currentState.servers[idx].accounts.push({ run: true, login: "", password: "", character: "" });
-            viewTransitionRender();
+            currentState.servers[idx].accounts.push({ run: true, login: "", password: "", character: "", _isNew: true });
+            render();
+            const accIdx = currentState.servers[idx].accounts.length - 1;
+            setTimeout(() => {
+                if (currentState.servers[idx] && currentState.servers[idx].accounts[accIdx]) {
+                    currentState.servers[idx].accounts[accIdx]._isNew = false;
+                }
+            }, 400);
         });
     });
 
@@ -313,8 +356,14 @@ function attachListeners() {
         btn.addEventListener("click", (e) => {
             const srv = parseInt((e.target as HTMLElement).getAttribute("data-srv")!);
             const acc = parseInt((e.target as HTMLElement).getAttribute("data-acc")!);
-            currentState.servers[srv].accounts.splice(acc, 1);
-            viewTransitionRender();
+            currentState.servers[srv].accounts[acc]._isRemoving = true;
+            render();
+            setTimeout(() => {
+                if (currentState.servers[srv]) {
+                    currentState.servers[srv].accounts.splice(acc, 1);
+                    render();
+                }
+            }, 400);
         });
     });
 
@@ -399,6 +448,91 @@ function attachListeners() {
             setLogVisible(true);
             logMsg(`Launching ${currentState.servers[srv].accounts[acc].character}...`);
             await invoke("launch_account", { serverIndex: srv, accountIndex: acc });
+        });
+    });
+
+    // --- HTML5 Drag and Drop for Server Cards ---
+    let draggedServerIdx: number | null = null;
+    document.querySelectorAll(".server-card").forEach(card => {
+        card.addEventListener("dragstart", (e) => {
+            const target = e.target as HTMLElement;
+            // Prevent dragging from form elements directly
+            if (['INPUT', 'BUTTON', 'TEXTAREA', 'LABEL'].includes((e.target as HTMLElement).tagName)) {
+                e.preventDefault();
+                return;
+            }
+            draggedServerIdx = parseInt(target.dataset.srvIndex!);
+            target.style.opacity = '0.5';
+            target.style.transform = 'scale(0.98)';
+        });
+        card.addEventListener("dragend", (e) => {
+            const target = e.target as HTMLElement;
+            target.style.opacity = '1';
+            target.style.transform = 'scale(1)';
+            draggedServerIdx = null;
+            document.querySelectorAll(".server-card").forEach(c => {
+                (c as HTMLElement).style.borderBottom = '';
+                (c as HTMLElement).style.borderTop = '';
+            });
+        });
+        card.addEventListener("dragover", (e) => {
+            e.preventDefault(); // Necessary to allow dropping
+            const target = (e.currentTarget as HTMLElement);
+            if (draggedServerIdx === null || draggedServerIdx === parseInt(target.dataset.srvIndex!)) return;
+
+            const bounding = target.getBoundingClientRect();
+            const offset = bounding.y + (bounding.height / 2);
+            if ((e as DragEvent).clientY - offset > 0) {
+                target.style.borderBottom = `2px solid var(--text-accent)`;
+                target.style.borderTop = '';
+            } else {
+                target.style.borderTop = `2px solid var(--text-accent)`;
+                target.style.borderBottom = '';
+            }
+        });
+        card.addEventListener("dragleave", (e) => {
+            const target = (e.currentTarget as HTMLElement);
+            target.style.borderBottom = '';
+            target.style.borderTop = '';
+        });
+        card.addEventListener("drop", (e) => {
+            e.preventDefault();
+            const target = (e.currentTarget as HTMLElement);
+            target.style.borderBottom = '';
+            target.style.borderTop = '';
+            if (draggedServerIdx === null) return;
+            const targetIdx = parseInt(target.dataset.srvIndex!);
+            if (draggedServerIdx === targetIdx) return;
+
+            // Determine if dropped above or below
+            const bounding = target.getBoundingClientRect();
+            const offset = bounding.y + (bounding.height / 2);
+            const dropAbove = (e as DragEvent).clientY - offset <= 0;
+
+            let insertIdx = targetIdx;
+            if (!dropAbove) insertIdx++;
+            if (draggedServerIdx < insertIdx) insertIdx--;
+
+            // Splice array
+            const [moved] = currentState.servers.splice(draggedServerIdx, 1);
+            currentState.servers.splice(insertIdx, 0, moved);
+
+            // Remap expanded servers indices
+            const newExpanded = new Set<number>();
+            expandedServers.forEach(v => {
+                if (v === draggedServerIdx) {
+                    newExpanded.add(insertIdx);
+                } else {
+                    let newV = v;
+                    if (draggedServerIdx! < v) newV--;
+                    if (insertIdx <= newV && draggedServerIdx !== v) newV++;
+                    newExpanded.add(newV);
+                }
+            });
+            expandedServers = newExpanded;
+
+            requestSave();
+            render();
         });
     });
 }

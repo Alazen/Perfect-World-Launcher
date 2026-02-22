@@ -8,14 +8,14 @@
   --bg-input: #2A2D35;
 
   /* Buttons */
-  --btn-primary: #2bd2ff;
-  --btn-primary-hover: #5ee0ff;
+  --btn-primary: #00b4d8;
+  --btn-primary-hover: #2bd2ff;
 
   --btn-danger: #2A2D35;
   --btn-danger-hover: #383B43;
 
-  --btn-success: #2bd2ff;
-  --btn-success-hover: #5ee0ff;
+  --btn-success: #00b4d8;
+  --btn-success-hover: #2bd2ff;
 
   --btn-surface: #2A2D35;
   --btn-surface-hover: #383B43;
@@ -183,7 +183,7 @@ button:active {
 .btn-success {
   background: var(--btn-success);
   border: none;
-  font-size: 14px;
+  font-size: 12px;
   padding: 12px 24px;
   border-radius: var(--radius-sm);
   font-weight: 700;
@@ -326,14 +326,16 @@ input:focus {
 
 /* --- Account Table --- */
 .accounts-grid {
-  display: grid;
-  grid-template-columns: 48px 100px 1.5fr 1fr 1fr 110px;
-  gap: 12px 16px;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .table-header {
-  display: contents;
+  display: grid;
+  grid-template-columns: 48px 100px 1.5fr 1fr 1fr 110px;
+  gap: 16px;
+  align-items: center;
 }
 
 .table-header>div {
@@ -354,13 +356,58 @@ input:focus {
 }
 
 .account-row {
-  display: contents;
+  display: grid;
+  grid-template-columns: 48px 100px 1.5fr 1fr 1fr 110px;
+  gap: 16px;
+  align-items: center;
+  /* Use a container with overflow hidden to allow max-height transitions */
+}
+
+.account-row.slide-down-in {
+  animation: slideDownIn var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized) forwards;
+}
+
+.account-row.slide-up-out {
+  animation: slideUpOut var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized) forwards;
+}
+
+@keyframes slideDownIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+    max-height: 0;
+    margin-top: -20px;
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 48px;
+    margin-top: 0;
+  }
+}
+
+@keyframes slideUpOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 48px;
+    margin-top: 0;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+    max-height: 0;
+    margin-top: -20px;
+  }
 }
 
 .account-row>div {
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  overflow: hidden;
 }
 
 .account-row>div.center {
@@ -419,7 +466,7 @@ input:focus {
   bottom: 73px;
   /* Just above footer */
   left: 20px;
-  right: 20px;
+  right: 42px;
   height: 250px;
   background: rgba(5, 8, 15, 0.95);
   border: 1px solid var(--border-focus);
@@ -428,8 +475,8 @@ input:focus {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  z-index: 5;
-  transform: translateY(150%);
+  z-index: 20;
+  transform: translateY(155%);
   opacity: 0;
   transition: transform var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-accelerate),
     opacity var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-accelerate);
