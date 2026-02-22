@@ -126,7 +126,7 @@ function render() {
         const toggleBtnText = isExpanded ? "Hide" : "Show";
 
         let innerHTML = `
-            <div class="server-header" style="transition: margin-bottom 0.3s ease-in-out; margin-bottom: ${isExpanded ? '24px' : '0'}; display: flex; gap: 16px; align-items: center; justify-content: flex-start;">
+            <div class="server-header" style="transition: margin-bottom var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized); margin-bottom: ${isExpanded ? '24px' : '0'}; display: flex; gap: 16px; align-items: center; justify-content: flex-start;">
                 <button class="btn-toggle-srv" data-srv="${serverIdx}" style="background: var(--btn-surface); border: none; font-weight: 700; border-radius: 9999px; color: white; width: 100px;">${toggleBtnText}</button>
                 <input type="text" class="server-name" data-srv="${serverIdx}" value="${escapeHtml(server.name)}" placeholder="Server name" style="flex: 1; max-width: 600px; background: var(--bg-input); font-size: 13px; border: 1px solid rgba(255,255,255,0.03); border-radius: 9999px;" />
                 <button class="btn-primary btn-play-srv" data-srv="${serverIdx}" style="font-size: 13px; font-weight: 700; border-radius: 9999px;">Play ${escapeHtml(server.name)}</button>

@@ -37,6 +37,25 @@
   --radius-lg: 24px;
   --radius-md: 16px;
   --radius-sm: 9999px;
+
+  /* Motion Tokens (Material 3) */
+  --md-sys-motion-easing-standard: cubic-bezier(0.2, 0.0, 0, 1.0);
+  --md-sys-motion-easing-standard-accelerate: cubic-bezier(0.3, 0.0, 1, 1.0);
+  --md-sys-motion-easing-standard-decelerate: cubic-bezier(0.0, 0.0, 0, 1.0);
+  --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0.0, 0, 1.0);
+  --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0.0, 0.8, 0.15);
+  --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1.0);
+
+  --md-sys-motion-duration-short1: 50ms;
+  --md-sys-motion-duration-short2: 100ms;
+  --md-sys-motion-duration-short3: 150ms;
+  --md-sys-motion-duration-short4: 200ms;
+  --md-sys-motion-duration-medium1: 250ms;
+  --md-sys-motion-duration-medium2: 300ms;
+  --md-sys-motion-duration-medium3: 350ms;
+  --md-sys-motion-duration-medium4: 400ms;
+  --md-sys-motion-duration-long1: 450ms;
+  --md-sys-motion-duration-long2: 500ms;
 }
 
 /* Global Reset */
@@ -132,7 +151,10 @@ button {
   font-weight: 600;
   cursor: pointer;
   outline: none;
-  transition: all 0.2s ease;
+  transition: background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    border-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
   box-shadow: none;
   display: inline-flex;
   align-items: center;
@@ -145,7 +167,7 @@ button:hover {
 }
 
 button:active {
-  transform: translateY(1px);
+  transform: scale(0.96);
 }
 
 .btn-primary {
@@ -196,7 +218,9 @@ input[type="password"] {
   font-family: inherit;
   font-size: 12px;
   outline: none;
-  transition: all 0.2s ease;
+  transition: border-color var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard-decelerate),
+    box-shadow var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard-decelerate),
+    background var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard-decelerate);
   user-select: text;
   width: 100%;
 }
@@ -204,7 +228,7 @@ input[type="password"] {
 .expand-container {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: grid-template-rows var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized);
 }
 
 .expand-container.expanded {
@@ -253,11 +277,15 @@ input:focus {
   padding: 24px;
   margin-bottom: 12px;
   box-shadow: var(--shadow-lg);
-  transition: border-color 0.3s ease;
+  transition: border-color var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard);
 }
 
 .server-card:hover {
   border-color: rgba(148, 163, 184, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 }
 
 .server-header {
@@ -350,14 +378,23 @@ input:focus {
   background: var(--bg-input);
   cursor: pointer;
   position: relative;
-  transition: all 0.2s;
+  transition: background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.run-checkbox:hover {
+  background: rgba(43, 210, 255, 0.15);
+}
+
+.run-checkbox:active {
+  transform: scale(0.9);
 }
 
 .run-checkbox:checked {
   background: var(--text-accent);
 }
 
-.run-checkbox:checked::after {
+.run-checkbox::after {
   content: "✔";
   position: absolute;
   color: #000;
@@ -365,6 +402,15 @@ input:focus {
   left: 6px;
   top: 3px;
   font-weight: 900;
+  transform: scale(0);
+  opacity: 0;
+  transition: transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate),
+    opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+.run-checkbox:checked::after {
+  transform: scale(1);
+  opacity: 1;
 }
 
 /* --- Log Panel --- */
@@ -385,13 +431,16 @@ input:focus {
   z-index: 5;
   transform: translateY(150%);
   opacity: 0;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-accelerate),
+    opacity var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-accelerate);
   backdrop-filter: blur(10px);
 }
 
 .log-panel.visible {
   transform: translateY(0);
   opacity: 1;
+  transition: transform var(--md-sys-motion-duration-long2) var(--md-sys-motion-easing-emphasized-decelerate),
+    opacity var(--md-sys-motion-duration-long2) var(--md-sys-motion-easing-emphasized-decelerate);
 }
 
 .log-content {
