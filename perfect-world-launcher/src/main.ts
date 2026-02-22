@@ -75,14 +75,14 @@ function render() {
                     <label style="font-size: 12px; color: var(--text-muted); font-weight: 500; margin-right: 12px;">Delay (s):</label>
                     <span style="font-size: 13px; width: 16px; text-align: center; color: var(--text-white); font-weight: 600; margin-right: 12px;">${currentState.delay}</span>
                     <div style="display: flex; align-items: center; background: var(--btn-surface); border-radius: 9999px; overflow: hidden; border: 1px solid var(--border-subtle);">
-                        <button id="btn-delay-dec" style="padding: 0; width: 40px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 0; border: none; background: transparent; border-right: 1px solid rgba(255,255,255,0.05);">-</button>
-                        <button id="btn-delay-inc" style="padding: 0; width: 40px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 0; border: none; background: transparent;">+</button>
+                        <button id="btn-delay-dec" style="padding: 0; width: 40px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 0; border: none; border-right: 1px solid rgba(255,255,255,0.05);">-</button>
+                        <button id="btn-delay-inc" style="padding: 0; width: 40px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; border-radius: 0; border: none;">+</button>
                     </div>
                 </div>
             </div>
         </header>
 
-        <main class="content-area" id="server-list" style="padding: 0 32px;"></main>
+        <main class="content-area" id="server-list"></main>
 
         <footer style="background: transparent; border: none; box-shadow: none; padding: 16px 32px 32px 32px; display: flex; gap: 12px; align-items: stretch;">
             <button id="btn-start-all" class="btn-success" style="flex: 1.5; font-size: 16px; box-shadow: 0 4px 14px rgba(48, 213, 252, 0.2);">Start ${activeAccountsCount} accounts</button>
@@ -116,7 +116,7 @@ function render() {
                 <div><input type="text" class="acc-login" data-srv="${serverIdx}" data-acc="${accIdx}" value="${escapeHtml(acc.login)}" placeholder="Login"/></div>
                 <div><input type="password" class="acc-pass" data-srv="${serverIdx}" data-acc="${accIdx}" value="${escapeHtml(acc.password)}" placeholder="Password"/></div>
                 <div><input type="text" class="acc-char" data-srv="${serverIdx}" data-acc="${accIdx}" value="${escapeHtml(acc.character)}" placeholder="Character"/></div>
-                <div class="center"><button class="btn-danger btn-del-acc" data-srv="${serverIdx}" data-acc="${accIdx}" style="width: 100%; border-radius: 9999px; background: var(--btn-surface); color: white;">Remove</button></div>
+                <div class="center"><button class="btn-danger btn-del-acc" data-srv="${serverIdx}" data-acc="${accIdx}" style="width: 100%; border-radius: 9999px; color: white;">Remove</button></div>
             </div>
         `).join("");
 
@@ -127,18 +127,18 @@ function render() {
 
         let innerHTML = `
             <div class="server-header" style="transition: margin-bottom var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized); margin-bottom: ${isExpanded ? '24px' : '0'}; display: flex; gap: 16px; align-items: center; justify-content: flex-start;">
-                <button class="btn-toggle-srv" data-srv="${serverIdx}" style="background: var(--btn-surface); border: none; font-weight: 700; border-radius: 9999px; color: white; width: 100px;">${toggleBtnText}</button>
-                <input type="text" class="server-name" data-srv="${serverIdx}" value="${escapeHtml(server.name)}" placeholder="Server name" style="flex: 1; max-width: 600px; background: var(--bg-input); font-size: 13px; border: 1px solid rgba(255,255,255,0.03); border-radius: 9999px;" />
+                <button class="btn-toggle-srv" data-srv="${serverIdx}" style="border: none; font-weight: 700; border-radius: 9999px; color: white; width: 100px;">${toggleBtnText}</button>
+                <input type="text" class="server-name" data-srv="${serverIdx}" value="${escapeHtml(server.name)}" placeholder="Server name" style="flex: 1; max-width: 600px; font-size: 13px; border-radius: 9999px;" />
                 <button class="btn-primary btn-play-srv" data-srv="${serverIdx}" style="font-size: 13px; font-weight: 700; border-radius: 9999px;">Play ${escapeHtml(server.name)}</button>
-                <button class="btn-danger btn-del-srv" data-srv="${serverIdx}" style="font-size: 13px; border-radius: 9999px; background: var(--btn-surface); color: white;">Remove ${escapeHtml(server.name)}</button>
+                <button class="btn-danger btn-del-srv" data-srv="${serverIdx}" style="font-size: 13px; border-radius: 9999px; color: white;">Remove ${escapeHtml(server.name)}</button>
             </div>
             
             <div class="expand-container ${isExpanded ? 'expanded' : ''}">
                 <div class="expand-content">
-                    <div class="client-path-row" style="background: transparent; padding: 0; margin-bottom: 24px; border: none; gap: 16px;">
+                    <div class="client-path-row" style="background: transparent; padding: 4px 0; margin-bottom: 24px; border: none; gap: 16px;">
                         <label style="font-weight: 600; font-size: 12px; color: var(--text-muted); white-space: nowrap; width: 140px; text-align: left; padding-left: 12px;">Client Path Server ${serverIdx + 1}:</label>
-                        <input type="text" class="server-path" data-srv="${serverIdx}" value="${escapeHtml(server.client_path)}" placeholder="Select elementclient.exe" style="flex: 1; max-width: -webkit-fill-available; background: var(--bg-input); border: 1px solid rgba(255,255,255,0.03); padding: 0 16px; height: 40px; border-radius: 9999px;"/>
-                        <button class="btn-browse" data-srv="${serverIdx}" style="background: var(--btn-surface); border: none; font-weight: 600; border-radius: 9999px; color: white;">Browse</button>
+                        <input type="text" class="server-path" data-srv="${serverIdx}" value="${escapeHtml(server.client_path)}" placeholder="Select elementclient.exe" style="flex: 1; max-width: -webkit-fill-available; padding: 0 16px; height: 40px; border-radius: 9999px;"/>
+                        <button class="btn-browse" data-srv="${serverIdx}" style="border: none; font-weight: 600; border-radius: 9999px; color: white;">Browse</button>
                     </div>
                 
                     <div class="accounts-grid" style="border: none; background: transparent;">
@@ -153,9 +153,9 @@ function render() {
                         ${accountsHtml}
                     </div>
                     <div style="margin-top: 24px;">
-                        <button class="btn-add-acc" data-srv="${serverIdx}" style="background: var(--btn-surface); border: none; font-weight: 600; border-radius: 9999px; color: white;">Add Account</button>
+                        <button class="btn-add-acc" data-srv="${serverIdx}" style="border: none; font-weight: 600; border-radius: 9999px; color: white;">Add Account</button>
                     </div>
-                    <div style="margin-top: 32px; border-top: 1px solid rgba(255,255,255,0.02); margin-left: -24px; margin-right: -24px; margin-bottom: -24px;"></div>
+                    <div style="margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.02); margin-left: -24px; margin-right: -24px; margin-bottom: -24px;"></div>
                 </div>
             </div>
         `;
