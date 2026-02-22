@@ -277,6 +277,10 @@ input:focus {
   padding: 24px;
   margin-bottom: 12px;
   box-shadow: var(--shadow-lg);
+  transition: none;
+}
+
+.server-card.interactive {
   transition: border-color var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
     transform var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard),
     box-shadow var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-standard);
@@ -376,7 +380,7 @@ input:focus {
     opacity: 0;
     transform: translateY(-20px);
     max-height: 0;
-    margin-top: -20px;
+    margin-top: -12px;
   }
 
   100% {
@@ -399,7 +403,7 @@ input:focus {
     opacity: 0;
     transform: translateY(-20px);
     max-height: 0;
-    margin-top: -20px;
+    margin-top: -12px;
   }
 }
 
@@ -438,7 +442,7 @@ input:focus {
 }
 
 .run-checkbox:checked {
-  background: var(--text-accent);
+  background: var(--btn-primary);
 }
 
 .run-checkbox::after {

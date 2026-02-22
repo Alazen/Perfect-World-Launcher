@@ -209,6 +209,9 @@ function render() {
 
         card.innerHTML = innerHTML;
         serverListEl.appendChild(card);
+
+        // Add interactive class slightly after render to avoid initial transition glitch
+        setTimeout(() => card.classList.add("interactive"), 50);
     });
 
     attachListeners();
@@ -454,6 +457,15 @@ function attachListeners() {
     // --- HTML5 Drag and Drop for Server Cards ---
     let draggedServerIdx: number | null = null;
     document.querySelectorAll(".server-card").forEach(card => {
+        card.addEventListener("mousedown", (e) => {
+            // Prevent dragging when interacting with form elements
+            if (['INPUT', 'BUTTON', 'TEXTAREA', 'LABEL'].includes((e.target as HTMLElement).tagName)) {
+                (card as HTMLElement).draggable = false;
+            } else {
+                (card as HTMLElement).draggable = true;
+            }
+        });
+
         card.addEventListener("dragstart", (e) => {
             const target = e.target as HTMLElement;
             // Prevent dragging from form elements directly
@@ -474,6 +486,9 @@ function attachListeners() {
                 (c as HTMLElement).style.borderBottom = '';
                 (c as HTMLElement).style.borderTop = '';
             });
+        });
+        card.addEventListener("dragenter", (e) => {
+            e.preventDefault(); // Necessary to allow dropping
         });
         card.addEventListener("dragover", (e) => {
             e.preventDefault(); // Necessary to allow dropping
