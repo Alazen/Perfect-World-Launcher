@@ -4,15 +4,15 @@ from PyInstaller.utils.hooks import collect_submodules
 
 
 datas = [
-    ('perfect_world_launcher_v23.0\\launcher\\ui\\settings.json', 'launcher/ui'),
+    ('perfect_world_launcher_v24.0\\launcher\\ui\\settings.json', 'launcher/ui'),
 ]
 
 hiddenimports = collect_submodules('launcher')
 
 
 a = Analysis(
-    ['perfect_world_launcher_v23.0\\perfect_world_launcher_v23.0.py'],
-    pathex=['perfect_world_launcher_v23.0'],
+    ['perfect_world_launcher_v24.0\\perfect_world_launcher_v24.0.py'],
+    pathex=['perfect_world_launcher_v24.0'],
     binaries=[],
     datas=datas,
     hiddenimports=hiddenimports,

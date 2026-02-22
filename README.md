@@ -45,7 +45,7 @@
 
 1. Download the latest .exe from [Releases](https://github.com/Alazen/Perfect-World-Launcher/releases/).
 2. Choose a folder: save the EXE somewhere you can write (for example Documents or Desktop). On first run the app creates <code>settings.json</code> next to the EXE. If the folder is not writable, the app automatically stores settings at <code>%APPDATA%\PerfectWorldLauncher\settings.json</code>.
-3. Launch the app: double click <code>Perfect World Launcher v23.0.exe</code>.
+3. Launch the app: double click <code>Perfect World Launcher v24.0.exe</code>.
 
 > Tip: keep the EXE and <code>settings.json</code> together to carry your setup between machines.
 
@@ -215,9 +215,9 @@ Notes worth remembering:
 ## Build From Source (optional)
 
 - Requires Python 3.11 or newer and <code>pip install PySide6 pyinstaller</code>.
-- Entry point: <code>perfect_world_launcher_v23.0/perfect_world_launcher_v23.0.py</code>.
+- Entry point: <code>perfect_world_launcher_v24.0/perfect_world_launcher_v24.0.py</code>.
 - PyInstaller spec: <code>PerfectWorldLauncher.spec</code> (bundles icons and defaults).
-- Qt resources: run <code>pyside6-rcc perfect_world_launcher_v23.0/launcher/resources/app_icon.qrc -o perfect_world_launcher_v23.0/launcher/resources/app_icon_rc.py</code> after updating <code>assets/pw_launcher_icon_3.ico</code>.
+- Qt resources: run <code>pyside6-rcc perfect_world_launcher_v24.0/launcher/resources/app_icon.qrc -o perfect_world_launcher_v24.0/launcher/resources/app_icon_rc.py</code> after updating <code>assets/pw_launcher_icon_3.ico</code>.
 - One-file build pipeline: <code>pwsh ./tools/build-onefile.ps1</code> regenerates resources, runs PyInstaller with <code>--onefile</code>, and places <code>Perfect World Launcher v&lt;version&gt;.exe</code> in <code>dist/</code>.
 
 ### Release Checklist

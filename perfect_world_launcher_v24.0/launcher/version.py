@@ -1,3 +1,3 @@
-APP_VERSION = '23.0'
+APP_VERSION = '24.0'
 __all__ = ['APP_VERSION']
 

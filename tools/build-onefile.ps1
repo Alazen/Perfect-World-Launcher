@@ -23,8 +23,8 @@ if (-not (Test-Path $pysideRccExe)) {
     throw "pyside6-rcc executable not found at $pysideRccExe. Run 'pip install PySide6'."
 }
 
-$resourceQrc = Join-Path $repoRoot 'perfect_world_launcher_v23.0/launcher/resources/app_icon.qrc'
-$resourcePy = Join-Path $repoRoot 'perfect_world_launcher_v23.0/launcher/resources/app_icon_rc.py'
+$resourceQrc = Join-Path $repoRoot 'perfect_world_launcher_v24.0/launcher/resources/app_icon.qrc'
+$resourcePy = Join-Path $repoRoot 'perfect_world_launcher_v24.0/launcher/resources/app_icon_rc.py'
 
 Write-Verbose 'Regenerating Qt resources...'
 & $pysideRccExe $resourceQrc -o $resourcePy
@@ -49,7 +49,7 @@ if (-not (Test-Path $rawExe)) {
     throw "Expected artefact $rawExe was not produced. Check the PyInstaller output."
 }
 
-$versionFile = Join-Path $repoRoot 'perfect_world_launcher_v23.0/launcher/version.py'
+$versionFile = Join-Path $repoRoot 'perfect_world_launcher_v24.0/launcher/version.py'
 $versionLine = Get-Content $versionFile | Where-Object { $_ -match 'APP_VERSION\s*=\s*' } | Select-Object -First 1
 if (-not $versionLine) {
     throw "Could not detect APP_VERSION in $versionFile."

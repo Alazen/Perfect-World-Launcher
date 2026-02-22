@@ -396,6 +396,45 @@ class LauncherWindow(QMainWindow):
     def get_delay_value(self) -> int:
         return self.delay_stepper.value()
 
+    def open_server_launcher(self, server_index: int) -> None:
+        if not (0 <= server_index < len(self.servers)):
+            self.log("Selected server does not exist.")
+            return
+        
+        card = self.servers[server_index]
+        server_name = card.display_name()
+        client_path = card.client_path()
+        
+        if not client_path or not os.path.isfile(client_path):
+            self.log(f"Client path for '{server_name}' is invalid or missing.")
+            return
+            
+        path_obj = Path(client_path)
+        parts = path_obj.parts
+        element_index = -1
+        
+        for i, part in enumerate(reversed(parts)):
+            if part.lower() == 'element':
+                element_index = len(parts) - 1 - i
+                break
+                
+        if element_index <= 0:
+            self.log(f"Could not determine game root from path for '{server_name}'. Must contain an 'element' folder.")
+            return
+            
+        root_path = Path(*parts[:element_index])
+        launcher_exe = root_path / "launcher" / "Launcher.exe"
+        
+        if not launcher_exe.is_file():
+            self.log(f"Launcher executable not found at: {launcher_exe}")
+            return
+            
+        self.log(f"Starting launcher for '{server_name}' at {launcher_exe}...")
+        try:
+            import subprocess
+            subprocess.Popen([str(launcher_exe)], cwd=str(launcher_exe.parent))
+        except Exception as exc:
+            self.log(f"Failed to start launcher for '{server_name}': {exc}")
 
     def collect_launch_plan(
         self, server_index: Optional[int] = None, account_index: Optional[int] = None

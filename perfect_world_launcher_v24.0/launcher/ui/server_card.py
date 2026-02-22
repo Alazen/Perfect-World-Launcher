@@ -74,6 +74,12 @@ class ServerCard(QFrame):
         self.play_button.setMinimumWidth(140)
         self.play_button.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         header_layout.addWidget(self.play_button)
+        self.launcher_button = QPushButton("Launcher", header_frame)
+        self.launcher_button.setFont(window.fonts["button"])
+        apply_button_style(self.launcher_button, Theme.button_secondary)
+        self.launcher_button.setMinimumWidth(140)
+        self.launcher_button.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        header_layout.addWidget(self.launcher_button)
         self.remove_button = QPushButton("Remove", header_frame)
         self.remove_button.setFont(window.fonts["button"])
         apply_button_style(self.remove_button, Theme.button_secondary)
@@ -172,6 +178,7 @@ class ServerCard(QFrame):
         self._pending_refresh = False
         self.toggle_button.clicked.connect(self.toggle_body)
         self.play_button.clicked.connect(self.play_server)
+        self.launcher_button.clicked.connect(self.open_launcher)
         self.remove_button.clicked.connect(self.remove_server)
         self.browse_button.clicked.connect(self.browse_client_path)
         self.add_account_button.clicked.connect(self.add_account)
@@ -308,6 +315,8 @@ class ServerCard(QFrame):
         self.client_path_label.setText(f"Client Path {display_name}:")
         self.play_button.setText(f"Play {display_name}")
         self.play_button.updateGeometry()
+        self.launcher_button.setText(f"Launcher {display_name}")
+        self.launcher_button.updateGeometry()
         self.remove_button.setText(f"Remove {display_name}")
         self.remove_button.updateGeometry()
 
@@ -315,6 +324,11 @@ class ServerCard(QFrame):
         if self.index < 0:
             return
         self.window.start_launch_sequence(server_index=self.index)
+
+    def open_launcher(self) -> None:
+        if self.index < 0:
+            return
+        self.window.open_server_launcher(self.index)
 
     def remove_server(self) -> None:
         self.window.remove_server(self)
