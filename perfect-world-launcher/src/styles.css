@@ -407,6 +407,38 @@ input:focus {
   }
 }
 
+.server-card.slide-down-in {
+  animation: serverFadeInDown var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized) forwards;
+}
+
+.server-card.slide-up-out {
+  animation: serverFadeOutUp var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized) forwards;
+}
+
+@keyframes serverFadeInDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes serverFadeOutUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
 .account-row>div {
   display: flex;
   align-items: center;

@@ -43,6 +43,10 @@ const appEl = document.getElementById("app")!;
 
 // --- Initialization ---
 window.addEventListener("DOMContentLoaded", async () => {
+    // Prevent default drag and drop behaviors on the window to allow our custom drag/drop to work inside the app
+    window.addEventListener("dragover", (e) => e.preventDefault());
+    window.addEventListener("drop", (e) => e.preventDefault());
+
     try {
         currentState = await invoke("get_config");
         setupLogListener();
@@ -467,6 +471,7 @@ function attachListeners() {
         });
 
         card.addEventListener("dragstart", (e) => {
+            const dragEvent = e as DragEvent;
             const target = e.target as HTMLElement;
             // Prevent dragging from form elements directly
             if (['INPUT', 'BUTTON', 'TEXTAREA', 'LABEL'].includes((e.target as HTMLElement).tagName)) {
@@ -474,6 +479,10 @@ function attachListeners() {
                 return;
             }
             draggedServerIdx = parseInt(target.dataset.srvIndex!);
+            if (dragEvent.dataTransfer) {
+                dragEvent.dataTransfer.effectAllowed = 'move';
+                dragEvent.dataTransfer.setData('text/plain', draggedServerIdx.toString());
+            }
             target.style.opacity = '0.5';
             target.style.transform = 'scale(0.98)';
         });
