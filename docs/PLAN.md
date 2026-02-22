@@ -1,60 +1,47 @@
-# Refactoring Plan: Perfect World Launcher
+# Perfect World Launcher UI Redesign Plan
 
-## 1. Analysis of Current Implementation
-The current application is written in Python 3.11+ using the PySide6 framework for its graphical user interface. The primary function of the application is to manage a structured JSON configuration of game servers and player accounts, and sequentially launch instances of `elementclient.exe` passing the appropriate `startbypatcher` arguments.
+## Goal Description
+The objective is to completely redesign the Perfect World Launcher UI to exactly match the provided target screenshot. The new theme transitions from a typical rectangular, multi-gradient dashboard to a highly refined, premium dark-charcoal aesthetic with bright cyan/blue accents and heavily rounded (pill-shaped) elements.
 
-While Python and PySide6 are excellent for rapid iteration and feature development, this stack presents several major drawbacks for a desktop game launcher:
-- **Excessive Binary Size**: Bundling the Python interpreter and PySide6/Qt libraries using PyInstaller results in a massive standalone executable (often exceeding 100-150MB).
-- **High Resource Utilization**: The resident memory (RAM) footprint of a Python/Qt app is relatively large (often 80MB to 150MB+ just idling) compared to native applications, which is undesirable for a "background" launcher running alongside a resource-intensive game client.
-- **Slow Cold Boot Time**: Initializing the PyInstaller bundle (extracting files to `%Temp%`) and starting the Python runtime causes noticeable launch delays before the UI even appears.
-- **Overkill Architecture**: The core logic—parsing JSON, manipulating a few UI elements, and executing `subprocess` OS commands—is structurally quite simple. Bringing an entire Python runtime is disproportionately heavy.
+## Design Tokens & Aesthetic Principles
+To achieve a "1:1" match with the screenshot, the following design principles must be implemented:
 
-## 2. The Ideal Target Language & Framework
-The user requested an app that is "as light as possible, with high and smooth performance" while maintaining the "same UI and UX".
-Is there something better than Python? **Yes. Rust + Tauri** is currently the best-in-class technology stack to achieve these exact goals.
+1.  **Color Palette**:
+    *   **Background (App)**: Very dark, almost black charcoal (e.g., `#16181A` or `#18181B`).
+    *   **Surface/Cards (Server blocks)**: Slightly lighter dark gray (e.g., `#212429` or `#1E1E1E`).
+    *   **Inputs / Secondary Buttons**: Muted dark gray with subtle borders (e.g., `#2A2D35`).
+    *   **Primary Accent**: Bright Cyan/Light Blue for primary actions like "Play" and "Start 2 accounts" (e.g., `#3BDFE4` or `#2bd2ff`).
+    *   **Text**: White for headings and primary values (`#FFFFFF`), slightly muted gray for labels (`#A0A5B1`).
 
-Other alternatives were considered but rejected:
-- **C# / .NET (WPF / WinUI 3)**: Requires the .NET runtime. While .NET 8 AOT (Ahead-of-Time compilation) helps reduce size, replicating the advanced CSS styling (gradients, custom inputs, animations) is significantly harder and more verbose in XAML than in standard Web CSS.
-- **C++ / Qt**: Retains the heavy Qt libraries and complicates the build system/developer experience compared to modern web tech. Electron is completely disqualified as it is significantly heavier than Python due to bundling Chromium.
+2.  **Typography**:
+    *   Modern sans-serif (Inter, Roboto, or Segoe UI) with strong weight distinctions. Labels (`Hide`, `Server name`) are semi-bold, while inputs are regular weight.
 
-### Recommendation: Rust + Tauri
-Tauri is a toolkit that allows developers to build optimized, secure, and frontend-independent desktop applications.
-- **Backend (Core Logic):** Written in Rust (compiled directly to raw machine code).
-- **Frontend (UI/UX):** Written in HTML/CSS/JavaScript (or TypeScript), rendered via the OS's native webview (WebView2 on Windows). This avoids bundling a whole browser engine.
+3.  **Shapes & Borders**:
+    *   **Pill-Shapes**: Almost all interactive elements (buttons, inputs) must have maximum border-radius (`border-radius: 9999px` or `24px` to achieve the pill look).
+    *   **Server Cards**: Should have a generous border-radius (e.g., `24px`) with a subtle border outline (e.g., `1px solid rgba(255, 255, 255, 0.05)`).
+    *   **Checkboxes**: Specialized rounded-square or circular checkboxes filled with cyan when checked, featuring a distinct checkmark.
 
-## 3. Pros and Cons of Upgrading to Rust + Tauri
+## Proposed Changes
 
-### Pros (Why do this upgrade?)
-1. **Ultra-Lightweight Executables**: A Tauri application compiles to an incredibly tiny standalone `.exe` file (typically ranging from **3 MB to 8 MB**), resolving the 100MB+ bloat of PyInstaller.
-2. **Near-Zero Resource Footprint**: The Rust backend uses almost no memory and requires zero garbage collection overhead. Since the frontend uses the OS-native WebView2, it behaves as smoothly and lightly as a native OS window.
-3. **Instantaneous Startup**: Rust is a compiled systems language. The launcher will cold-boot essentially instantly compared to the Python build.
-4. **Flawless UI Fidelity**: The current UI relies heavily on gradients, rounded corners, shadows, and CSS-like styling (`theme.py`). By moving to actual web standards (CSS/HTML), we can achieve a **1:1 pixel-perfect recreation** of the UI, and easily add buttery smooth 60fps micro-animations (e.g., hover effects, slide-downs), directly elevating the premium "UX" feel.
-5. **No External Dependencies**: The final build is a single native `.exe` file run perfectly on any modern Windows 10/11 system naturally.
-6. **Built-in Security**: Tauri explicitly defines what IPC (Inter-Process Communication) and file system access is allowed, drastically reducing vulnerabilities over a globally accessible `subprocess.Popen` implementation.
+### 1. `perfect-world-launcher/src/styles.css`
+*   **[MODIFY]**: Redefine all CSS variables (`--bg-app`, `--bg-card`, `--btn-primary`, `--btn-surface`, etc.) to match the new dark charcoal and cyan palette.
+*   **[MODIFY]**: Update `button` and `input` global styles to enforce pill-shaped `border-radius: 30px`, specific paddings, and the new background colors.
+*   **[MODIFY]**: Revamp the `.server-card` classes. Remove heavy drop-shadows in favor of clean, subtle borders and flat dark backgrounds.
+*   **[MODIFY]**: Create a custom `.run-checkbox` style to exactly match the rounded, bright cyan checkbox in the screenshot.
+*   **[MODIFY]**: Adjust grid layouts for the `.accounts-grid` to ensure inputs and buttons align properly with the new pill shapes. Remove the sharp table-header background, replacing it with a transparent, text-only header layout.
 
-### Cons (The Trade-offs)
-1. **Paradigm Shift in Architecture**: The application must split clearly from a monolithic script into a distinct Frontend (UI context) and Backend (Native OS context), communicating asynchronously via IPC commands.
-2. **Steeper Learning Curve**: Rust’s memory safety rules (ownership/borrowing) necessitate more explicit architecture design than Python's loose typing.
-3. **Refactoring Investment**: This is not an automatic port; the front-end components and core backend logic will need to be rebuilt from scratch, copying logic rather than code files.
+### 2. `perfect-world-launcher/src/main.ts`
+*   **[MODIFY]**: **State Management**: Introduce an `expandedServers` state (e.g., `Set<number>`) to track which server cards are expanded (showing the client path and accounts) versus collapsed.
+*   **[MODIFY]**: **Header Rendering**: Update the `appEl.innerHTML` template. Transform the header to match the top row:
+    *   "Import Settings" and "Export Settings" as distinct pill buttons.
+    *   Delay container with the label, the number, and `-` / `+` circular buttons to increment/decrement the delay.
+*   **[MODIFY]**: **Server Card Template**:
+    *   Create a conditional rendering flow based on the `expandedServers` state.
+    *   **Collapsed View**: Show a single horizontal row containing the "Show" button, Server Name input, "Play [Server Name]" cyan button, and "Remove [Server Name]" button.
+    *   **Expanded View**: Show "Hide", Server Name input, Play, Remove. Below it, show the "Client Path:" row, the Accounts table, and the "Add Account" button inside a distinct nested layout.
+*   **[MODIFY]**: **Footer Rendering**: Rebuild the bottom row. It must contain the massive cyan "Start X accounts" button on the left, followed by "Add Server", "Save and Close", and "Show Log" buttons aligned horizontally. The launch log should appear seamlessly at the bottom left.
+*   **[MODIFY]**: **Event Listeners**: Bind the new toggles ("Show"/"Hide"), the new Delay `-` / `+` buttons, and the "Save and Close" action.
 
-## 4. Architectural Redesign Strategy
-
-In order to maintain identical UI and functionality, the rewrite must map the Python logic clearly to the new stack.
-
-### Backend Data Layer (Rust API)
-- Convert `models/account.py` and `models/server.py` into Rust structs using the `serde` framework to serialize into identical JSON footprints (`settings.json`).
-- Implement the `SettingsStore` utilizing the native `std::fs` and `serde_json` libraries. Retain the fallback logic `os.getenv('APPDATA')`.
-- Migrate the `Launcher` class into native `std::process::Command` calls to spawn `elementclient.exe` sequentially. Retain the threading delay mechanism using `std::thread::sleep` natively.
-
-### Frontend Presentation Layer (Web UI)
-- To keep the app "light", no heavy frontend framework (like React or Angular) is strictly needed. **Vanilla HTML/JS/CSS** or a minimal tool like **Svelte** is recommended to keep bundle size incredibly low while handling DOM state predictably.
-- Translate `theme.py` entirely into a modular `styles.css`. Modern CSS flexbox and CSS variables will manage the gradients, padding, and layout perfectly.
-- Remap `window.py` (MainLayout/ScrollArea) to simple semantic HTML structuring. Rebuild `server_card.py` utilizing standard HTML `<input>` bindings.
-
-### Cross-System Communication (IPC)
-The Python signals (like updating the status log or adjusting the counter) will be replaced with Tauri asynchronous commands:
-- `invoke('fetch_settings')`
-- `invoke('launch_all_enabled', { accounts, delay })`
-- Emitting native Rust signals dynamically to the JS listener for real-time Log population.
-
-By executing this specific architectural plan, the Perfect World Launcher will shift from a heavy Python prototyping script into a fully optimized, native-grade desktop software, completely fulfilling the goal of "high and smooth performance" alongside minimal weight.
+## Verification Plan
+*   **Automated Verification**: Build process ensures no TypeScript compilation errors occur with the updated models and state structure.
+*   **Manual UI Matching**: Start the app, expand one server, collapse another, and place the application window side-by-side with the reference screenshot. Verify colors, borders, toggles, button shapes, and flex-gaps match the reference.
