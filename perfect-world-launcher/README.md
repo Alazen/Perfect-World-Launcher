@@ -1,6 +1,24 @@
-# Tauri + Vanilla TS
+# Perfect World Launcher (Tauri Version W.I.P)
 
-This template should help get you started developing with Tauri in vanilla HTML, CSS and Typescript.
+This is the new Tauri + Rust version of the Perfect World Launcher.
+
+## Development Setup
+
+1. [Install Rust](https://www.rust-lang.org/tools/install)
+2. [Install Node.js](https://nodejs.org/)
+
+## Build and Run
+
+To build the executable:
+```cmd
+npm install
+npm run tauri build
+```
+
+To run the built executable:
+```cmd
+Start-Process .\src-tauri\target\release\perfect-world-launcher.exe
+```
 
 ## Recommended IDE Setup
 

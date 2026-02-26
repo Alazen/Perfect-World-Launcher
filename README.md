@@ -212,13 +212,36 @@ Notes worth remembering:
 - Reuse your existing <code>settings.json</code> when updating the EXE.
 - Keep <code>settings.json</code> next to the new EXE or in <code>%APPDATA%\PerfectWorldLauncher</code> for a seamless migration.
 
-## Build From Source (optional)
+## Build From Source (Tauri / Rust Version)
 
-- Requires Python 3.11 or newer and <code>pip install PySide6 pyinstaller</code>.
-- Entry point: <code>perfect_world_launcher_v24.0/perfect_world_launcher_v24.0.py</code>.
-- PyInstaller spec: <code>PerfectWorldLauncher.spec</code> (bundles icons and defaults).
-- Qt resources: run <code>pyside6-rcc perfect_world_launcher_v24.0/launcher/resources/app_icon.qrc -o perfect_world_launcher_v24.0/launcher/resources/app_icon_rc.py</code> after updating <code>assets/pw_launcher_icon_3.ico</code>.
-- One-file build pipeline: <code>pwsh ./tools/build-onefile.ps1</code> regenerates resources, runs PyInstaller with <code>--onefile</code>, and places <code>Perfect World Launcher v&lt;version&gt;.exe</code> in <code>dist/</code>.
+The launcher is being refactored to use Tauri and Rust.
+To build and run the new version:
+
+1. Ensure you have Node.js and Rust installed.
+2. Navigate to the `perfect-world-launcher` directory:
+   ```cmd
+   cd perfect-world-launcher
+   ```
+3. Install dependencies (if you haven't already):
+   ```cmd
+   npm install
+   ```
+4. Build the application:
+   ```cmd
+   npm run tauri build
+   ```
+5. Run the compiled executable:
+   ```cmd
+   Start-Process .\src-tauri\target\release\perfect-world-launcher.exe
+   ```
+
+## Build From Source (Legacy Python Version)
+
+- Requires Python 3.11 or newer and `pip install PySide6 pyinstaller`.
+- Entry point: `perfect_world_launcher_v24.0/perfect_world_launcher_v24.0.py`.
+- PyInstaller spec: `PerfectWorldLauncher.spec` (bundles icons and defaults).
+- Qt resources: run `pyside6-rcc perfect_world_launcher_v24.0/launcher/resources/app_icon.qrc -o perfect_world_launcher_v24.0/launcher/resources/app_icon_rc.py` after updating `assets/pw_launcher_icon_3.ico`.
+- One-file build pipeline: `pwsh ./tools/build-onefile.ps1` regenerates resources, runs PyInstaller with `--onefile`, and places `Perfect World Launcher v<version>.exe` in `dist/`.
 
 ### Release Checklist
 
