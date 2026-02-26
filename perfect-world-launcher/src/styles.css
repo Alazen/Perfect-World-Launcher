@@ -409,21 +409,33 @@ input:focus {
 
 .server-card.slide-down-in {
   animation: serverFadeInDown var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized) forwards;
+  overflow: hidden;
 }
 
 .server-card.slide-up-out {
   animation: serverFadeOutUp var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized) forwards;
+  overflow: hidden;
 }
 
 @keyframes serverFadeInDown {
   0% {
     opacity: 0;
     transform: translateY(-20px);
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-color: transparent;
   }
 
   100% {
     opacity: 1;
     transform: translateY(0);
+    max-height: 200px;
+    padding-top: 24px;
+    padding-bottom: 24px;
+    margin-bottom: 12px;
+    border-color: var(--border-subtle);
   }
 }
 
@@ -431,11 +443,21 @@ input:focus {
   0% {
     opacity: 1;
     transform: translateY(0);
+    max-height: var(--removal-height, 500px);
+    padding-top: 24px;
+    padding-bottom: 24px;
+    margin-bottom: 12px;
+    border-color: var(--border-subtle);
   }
 
   100% {
     opacity: 0;
     transform: translateY(-20px);
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-color: transparent;
   }
 }
 

@@ -26,6 +26,7 @@ type ServerWithUIState = Omit<Server, 'accounts'> & {
     accounts: AccountWithUIState[];
     _isNew?: boolean;
     _isRemoving?: boolean;
+    _removeHeight?: number;
 };
 
 type Settings = {
@@ -164,11 +165,19 @@ function render() {
         }).join("");
 
         let cardClass = "server-card";
-        if (server._isNew) cardClass += " slide-down-in";
-        else if (server._isRemoving) cardClass += " slide-up-out";
+        let cardStyle = "";
+        if (server._isNew) {
+            cardClass += " slide-down-in";
+        } else if (server._isRemoving) {
+            cardClass += " slide-up-out";
+            if (server._removeHeight) {
+                cardStyle = `--removal-height: ${server._removeHeight}px;`;
+            }
+        }
 
         const card = document.createElement("div");
         card.className = cardClass;
+        if (cardStyle) card.style.cssText = cardStyle;
         card.draggable = true;
         card.dataset.srvIndex = serverIdx.toString();
 
@@ -329,7 +338,14 @@ function attachListeners() {
 
     document.querySelectorAll(".btn-del-srv").forEach(btn => {
         btn.addEventListener("click", (e) => {
-            const idx = parseInt((e.target as HTMLElement).getAttribute("data-srv")!);
+            const btnEl = e.target as HTMLElement;
+            const idx = parseInt(btnEl.getAttribute("data-srv")!);
+
+            const card = btnEl.closest(".server-card") as HTMLElement;
+            if (card) {
+                currentState.servers[idx]._removeHeight = card.offsetHeight;
+            }
+
             currentState.servers[idx]._isRemoving = true;
             render();
             setTimeout(() => {
