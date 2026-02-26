@@ -252,8 +252,12 @@ function logMsg(msg: string, type: 'info' | 'success' | 'error' = 'info') {
 async function setupLogListener() {
     await listen<string>("launch-log", (payload) => {
         let type: 'info' | 'success' | 'error' = 'info';
-        if (payload.payload.toLowerCase().includes("success")) type = 'success';
-        if (payload.payload.toLowerCase().includes("fail")) type = 'error';
+        const msg = payload.payload.toLowerCase();
+        if (msg.includes("success")) type = 'success';
+        if (msg.includes("fail") || msg.includes("aborting") || msg.includes("no enabled")) {
+            type = 'error';
+            setLogVisible(true);
+        }
         logMsg(payload.payload, type);
     });
 }
@@ -433,7 +437,6 @@ function attachListeners() {
     });
 
     document.getElementById("btn-start-all")?.addEventListener("click", async () => {
-        setLogVisible(true);
         logMsg("Starting global sequential launch...");
         await invoke("launch_all");
     });
@@ -441,7 +444,6 @@ function attachListeners() {
     document.querySelectorAll(".btn-play-srv").forEach(btn => {
         btn.addEventListener("click", async (e) => {
             const srv = parseInt((e.target as HTMLElement).getAttribute("data-srv")!);
-            setLogVisible(true);
             logMsg(`Starting server ${currentState.servers[srv].name}...`);
             await invoke("launch_server", { serverIndex: srv });
         });
@@ -452,7 +454,6 @@ function attachListeners() {
             const target = e.target as HTMLElement;
             const srv = parseInt(target.getAttribute("data-srv")!);
             const acc = parseInt(target.getAttribute("data-acc")!);
-            setLogVisible(true);
             logMsg(`Launching ${currentState.servers[srv].accounts[acc].character}...`);
             await invoke("launch_account", { serverIndex: srv, accountIndex: acc });
         });

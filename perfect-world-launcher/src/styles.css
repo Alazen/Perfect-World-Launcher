@@ -501,7 +501,6 @@ input:focus {
   position: absolute;
   bottom: 73px;
   /* Just above footer */
-  left: 20px;
   right: 42px;
   height: 250px;
   background: rgba(5, 8, 15, 0.95);
