@@ -124,22 +124,20 @@ function render() {
 
         <main class="content-area" id="server-list"></main>
 
-        <footer style="background: transparent; border: none; box-shadow: none; padding: 16px 42px 32px 32px; display: flex; gap: 12px; align-items: stretch;">
+        <footer style="background: transparent; border: none; box-shadow: none; padding: 16px 42px 32px 32px; display: flex; gap: 12px; align-items: stretch; position: relative; flex-shrink: 0;">
             <button id="btn-start-all" class="btn-success" style="flex: 1.5; box-shadow: 0 4px 14px rgba(48, 213, 252, 0.2);">Start ${activeAccountsCount} accounts</button>
             <button id="btn-import" style="flex: 1;">Import Settings</button>
             <button id="btn-export" style="flex: 1;">Export Settings</button>
             <button id="btn-save-close" style="flex: 1;">Save and Close</button>
             <button id="btn-toggle-log" style="flex: 1;">${logVisible ? "Hide Log" : "Show Log"}</button>
+            
+            <div style="position: absolute; bottom: 8px; right: 42px; font-size: 12px; color: var(--text-muted); font-family: monospace; text-align: right; pointer-events: none;" id="mini-log">
+                [${new Date().toLocaleTimeString('en-GB')}] Settings loaded
+            </div>
         </footer>
 
-        <div class="log-panel ${logVisible ? 'visible' : ''}" id="log-panel" style="width: 600px; background: #16181A; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.8);">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
-                <span style="font-weight: 600; color: var(--text-white)">Launch Log</span>
-            </div>
+        <div class="log-panel ${logVisible ? 'visible' : ''}" id="log-panel">
             <div class="log-content" id="log-content"></div>
-        </div>
-        <div style="position: absolute; bottom: 12px; right: 42px; font-size: 12px; color: var(--text-muted); font-family: monospace; text-align: right;" id="mini-log">
-            [${new Date().toLocaleTimeString('en-GB')}] Settings loaded
         </div>
     `;
 
@@ -243,7 +241,7 @@ function logMsg(msg: string, type: 'info' | 'success' | 'error' = 'info') {
 
     const el = document.createElement("div");
     el.className = "log-entry";
-    el.innerHTML = `< span class="timestamp" > [${timeStr}] < /span> <span class="${htmlClass}">${escapeHtml(msg)}</span > `;
+    el.innerHTML = `<span class="timestamp">[${timeStr}] </span><span class="${htmlClass}">${escapeHtml(msg)}</span>`;
 
     logContent.appendChild(el);
     logContent.scrollTop = logContent.scrollHeight;
