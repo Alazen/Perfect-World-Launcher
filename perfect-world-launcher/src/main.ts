@@ -358,7 +358,7 @@ function attachListeners() {
                 });
                 expandedServers = newExpanded;
                 render();
-            }, 400);
+            }, 800); // Wait for transition
         });
     });
 
@@ -388,7 +388,7 @@ function attachListeners() {
                     currentState.servers[srv].accounts.splice(acc, 1);
                     render();
                 }
-            }, 400);
+            }, 800);
         });
     });
 
