@@ -102,6 +102,9 @@ function setLogVisible(visible: boolean) {
 
 // --- Render Engine ---
 function render() {
+    const oldServerListEl = document.getElementById("server-list");
+    const preservedScrollTop = oldServerListEl ? oldServerListEl.scrollTop : 0;
+
     let activeAccountsCount = 0;
     currentState.servers.forEach(s => {
         s.accounts.forEach(a => { if (a.run) activeAccountsCount++; });
@@ -227,6 +230,11 @@ function render() {
     });
 
     attachListeners();
+
+    const newServerListEl = document.getElementById("server-list");
+    if (newServerListEl) {
+        newServerListEl.scrollTop = preservedScrollTop;
+    }
 }
 
 function escapeHtml(unsafe: string) {
