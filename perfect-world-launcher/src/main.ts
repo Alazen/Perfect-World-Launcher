@@ -211,6 +211,7 @@ function render() {
                     </div>
                     <div style="margin-top: 24px; display: flex; gap: 12px; align-items: center;">
                         <button class="btn-add-acc" data-srv="${serverIdx}" style="border: none; font-weight: 600; border-radius: 9999px; color: white;">Add Account</button>
+                        <button class="btn-server-launcher" data-srv="${serverIdx}" style="border: none; font-weight: 600; border-radius: 9999px; color: white;">Server Launcher</button>
                         <button class="btn-danger btn-del-srv" data-srv="${serverIdx}" style="font-size: 13px; border: none; font-weight: 600; border-radius: 9999px; color: white;">Remove ${escapeHtml(server.name)}</button>
                     </div>
                     <div style="margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.02); margin-left: -24px; margin-right: -24px; margin-bottom: -24px;"></div>
@@ -502,6 +503,15 @@ function attachListeners() {
             const acc = parseInt(target.getAttribute("data-acc")!);
             logMsg(`Launching ${currentState.servers[srv].accounts[acc].character}...`);
             await invoke("launch_account", { serverIndex: srv, accountIndex: acc });
+        });
+    });
+
+    document.querySelectorAll(".btn-server-launcher").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            const target = e.target as HTMLElement;
+            const srv = parseInt(target.getAttribute("data-srv")!);
+            logMsg(`Launching Server Launcher for ${currentState.servers[srv].name}...`);
+            await invoke("launch_server_launcher", { serverIndex: srv });
         });
     });
 

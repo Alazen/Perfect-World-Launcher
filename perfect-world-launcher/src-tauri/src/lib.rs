@@ -108,6 +108,24 @@ async fn launch_account(app: AppHandle, state: State<'_, AppState>, server_index
     Ok(())
 }
 
+#[tauri::command]
+async fn launch_server_launcher(app: AppHandle, state: State<'_, AppState>, server_index: usize) -> Result<(), ()> {
+    let client_path = {
+        let settings = state.settings.lock().unwrap();
+        if server_index >= settings.servers.len() {
+            return Ok(());
+        }
+        settings.servers[server_index].client_path.clone()
+    };
+
+    if !client_path.is_empty() {
+        crate::launcher::launch_server_launcher(app, &client_path);
+    } else {
+        let _ = app.emit("launch-log", "Client path is empty. Cannot launch server launcher.");
+    }
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let initial_settings = crate::store::load_settings().unwrap_or_default();
@@ -117,7 +135,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init()) // Dialog plugin needs to be initialized if we use native pickers
         .invoke_handler(tauri::generate_handler![
-            get_config, save_config, launch_all, launch_server, launch_account,
+            get_config, save_config, launch_all, launch_server, launch_account, launch_server_launcher,
             export_settings_to_file, import_settings_from_file
         ])
         .run(tauri::generate_context!())
