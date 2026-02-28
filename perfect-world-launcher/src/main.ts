@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { open as openDialog } from "@tauri-apps/plugin-dialog";
+import { open as openDialog, save as saveDialog } from "@tauri-apps/plugin-dialog";
 import { listen } from "@tauri-apps/api/event";
 
 // --- Types mapping to Rust models ---
@@ -292,6 +292,38 @@ function attachListeners() {
             window.close(); // or appWindow.close() from tauri API
         } catch (e) {
             logMsg(`Failed to save settings: ${e} `, "error");
+        }
+    });
+
+    document.getElementById("btn-import")?.addEventListener("click", async () => {
+        const selected = await openDialog({
+            multiple: false,
+            directory: false,
+            filters: [{ name: 'JSON Config', extensions: ['json'] }]
+        });
+        if (selected && typeof selected === 'string') {
+            try {
+                // @ts-ignore
+                currentState = await invoke("import_settings_from_file", { path: selected });
+                fullReRender();
+                logMsg(`Settings imported from ${selected}`, "success");
+            } catch (e) {
+                logMsg(`Failed to import settings: ${e}`, "error");
+            }
+        }
+    });
+
+    document.getElementById("btn-export")?.addEventListener("click", async () => {
+        const selected = await saveDialog({
+            filters: [{ name: 'JSON Config', extensions: ['json'] }]
+        });
+        if (selected && typeof selected === 'string') {
+            try {
+                await invoke("export_settings_to_file", { path: selected });
+                logMsg(`Settings exported to ${selected}`, "success");
+            } catch (e) {
+                logMsg(`Failed to export settings: ${e}`, "error");
+            }
         }
     });
 

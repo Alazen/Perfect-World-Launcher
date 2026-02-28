@@ -21,6 +21,27 @@ fn save_config(new_config: Settings, state: State<AppState>) -> Result<(), Strin
 }
 
 #[tauri::command]
+fn export_settings_to_file(path: String, state: State<AppState>) -> Result<(), String> {
+    let settings = state.settings.lock().unwrap();
+    let data = serde_json::to_string_pretty(&*settings).map_err(|e| e.to_string())?;
+    std::fs::write(path, data).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn import_settings_from_file(path: String, state: State<AppState>) -> Result<Settings, String> {
+    let data = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
+    let new_settings: Settings = serde_json::from_str(&data).map_err(|e| e.to_string())?;
+    
+    let mut settings = state.settings.lock().unwrap();
+    *settings = new_settings.clone();
+    
+    crate::store::save_settings(&settings)?;
+    
+    Ok(new_settings)
+}
+
+#[tauri::command]
 async fn launch_all(app: AppHandle, state: State<'_, AppState>) -> Result<(), ()> {
     let delay = { state.settings.lock().unwrap().delay };
     let servers = { state.settings.lock().unwrap().servers.clone() };
@@ -96,7 +117,8 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init()) // Dialog plugin needs to be initialized if we use native pickers
         .invoke_handler(tauri::generate_handler![
-            get_config, save_config, launch_all, launch_server, launch_account
+            get_config, save_config, launch_all, launch_server, launch_account,
+            export_settings_to_file, import_settings_from_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

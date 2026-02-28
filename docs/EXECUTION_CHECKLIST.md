@@ -47,6 +47,7 @@ This checklist breaks down the execution of the UI Redesign Plan to precisely ma
 - [ ] **Save and Close**: Add click event listener to `.btn-save-close`. Await `invoke("save_config")` followed by `window.close()` or `appWindow.close()`.
 - [ ] Re-bind existing inputs (server-name, client-path, acc-login, acc-pass, acc-char) to the new DOM structure.
 - [ ] Re-bind play and remove buttons.
+- [x] **Import/Export Settings**: Connect `#btn-import` and `#btn-export` to Tauri's dialog APIs and new Rust backend commands `import_settings_from_file` and `export_settings_to_file` to allow loading/saving configuration to custom files.
 
 ## Phase 5: Deep Polish & Review
 - [ ] Review Paddings / Margins side-by-side with the reference screenshot.
