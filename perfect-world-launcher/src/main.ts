@@ -383,7 +383,6 @@ function attachListeners() {
             const idx = parseInt(btnEl.getAttribute("data-srv")!);
 
             const card = btnEl.closest(".server-card") as HTMLElement;
-            const serverListEl = document.getElementById("server-list");
 
             if (card) {
                 // Get rect before touching anything
