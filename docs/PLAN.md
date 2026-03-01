@@ -1,43 +1,47 @@
-# Goal Description
-Add a "Launcher" button next to the "Play <Server>" button on each server card. This button will dynamically determine the location of the server's `Launcher.exe` based on the configured `elementclient.exe` path and execute it.
+# Perfect World Launcher UI Redesign Plan
 
-## User Review Required
-No major architectural changes are required. The main design decision is how to compute the root directory of the game.
-We will compute the root directory by parsing the path of the `elementclient.exe`, locating the `element` directory within its path components (case-insensitive), and treating the directory immediately preceding it as the game root. From the game root, the launcher path is constructed as `<root>/launcher/Launcher.exe`.
+## Goal Description
+The objective is to completely redesign the Perfect World Launcher UI to exactly match the provided target screenshot. The new theme transitions from a typical rectangular, multi-gradient dashboard to a highly refined, premium dark-charcoal aesthetic with bright cyan/blue accents and heavily rounded (pill-shaped) elements.
+
+## Design Tokens & Aesthetic Principles
+To achieve a "1:1" match with the screenshot, the following design principles must be implemented:
+
+1.  **Color Palette**:
+    *   **Background (App)**: Very dark, almost black charcoal (e.g., `#16181A` or `#18181B`).
+    *   **Surface/Cards (Server blocks)**: Slightly lighter dark gray (e.g., `#212429` or `#1E1E1E`).
+    *   **Inputs / Secondary Buttons**: Muted dark gray with subtle borders (e.g., `#2A2D35`).
+    *   **Primary Accent**: Bright Cyan/Light Blue for primary actions like "Play" and "Start 2 accounts" (e.g., `#3BDFE4` or `#2bd2ff`).
+    *   **Text**: White for headings and primary values (`#FFFFFF`), slightly muted gray for labels (`#A0A5B1`).
+
+2.  **Typography**:
+    *   Modern sans-serif (Inter, Roboto, or Segoe UI) with strong weight distinctions. Labels (`Hide`, `Server name`) are semi-bold, while inputs are regular weight.
+
+3.  **Shapes & Borders**:
+    *   **Pill-Shapes**: Almost all interactive elements (buttons, inputs) must have maximum border-radius (`border-radius: 9999px` or `24px` to achieve the pill look).
+    *   **Server Cards**: Should have a generous border-radius (e.g., `24px`) with a subtle border outline (e.g., `1px solid rgba(255, 255, 255, 0.05)`).
+    *   **Checkboxes**: Specialized rounded-square or circular checkboxes filled with cyan when checked, featuring a distinct checkmark.
 
 ## Proposed Changes
 
-### UI Modifications
-#### [MODIFY] `perfect_world_launcher_v24.0/launcher/ui/server_card.py`
-- In `__init__`, instantiate a new `QPushButton` named `launcher_button` with the text "Launcher".
-- Apply `Theme.button_secondary` style to it.
-- Add the `launcher_button` to the `header_layout`, placing it between the `play_button` and `remove_button`.
-- Connect the button's `clicked` signal to a new method `self.open_launcher()`.
-- Update `update_display_strings` to set the button's text to "Launcher `display_name`" just like how the "Play" and "Remove" buttons work.
-- Add `open_launcher` method:
-  - Calls `self.window.open_server_launcher(self.index)` to handle the logic.
+### 1. `perfect-world-launcher/src/styles.css`
+*   **[MODIFY]**: Redefine all CSS variables (`--bg-app`, `--bg-card`, `--btn-primary`, `--btn-surface`, etc.) to match the new dark charcoal and cyan palette.
+*   **[MODIFY]**: Update `button` and `input` global styles to enforce pill-shaped `border-radius: 30px`, specific paddings, and the new background colors.
+*   **[MODIFY]**: Revamp the `.server-card` classes. Remove heavy drop-shadows in favor of clean, subtle borders and flat dark backgrounds.
+*   **[MODIFY]**: Create a custom `.run-checkbox` style to exactly match the rounded, bright cyan checkbox in the screenshot.
+*   **[MODIFY]**: Adjust grid layouts for the `.accounts-grid` to ensure inputs and buttons align properly with the new pill shapes. Remove the sharp table-header background, replacing it with a transparent, text-only header layout.
 
-### Application Logic Modifications
-#### [MODIFY] `perfect_world_launcher_v24.0/launcher/ui/window.py`
-- Add a new method `open_server_launcher(self, server_index: int)`:
-  - Gets the corresponding server model based on the index.
-  - Passes the `client_path` to a helper function.
-  - Logs the outcome to the log panel.
-
-#### [NEW/MODIFY] `perfect_world_launcher_v24.0/launcher/services/launch.py` (Optional / Helper)
-- Add a helper function `launch_server_updater(client_path: str)` that implements the path resolution and `subprocess.Popen` execution.
+### 2. `perfect-world-launcher/src/main.ts`
+*   **[MODIFY]**: **State Management**: Introduce an `expandedServers` state (e.g., `Set<number>`) to track which server cards are expanded (showing the client path and accounts) versus collapsed.
+*   **[MODIFY]**: **Header Rendering**: Update the `appEl.innerHTML` template. Transform the header to match the top row:
+    *   "Import Settings" and "Export Settings" as distinct pill buttons.
+    *   Delay container with the label, the number, and `-` / `+` circular buttons to increment/decrement the delay.
+*   **[MODIFY]**: **Server Card Template**:
+    *   Create a conditional rendering flow based on the `expandedServers` state.
+    *   **Collapsed View**: Show a single horizontal row containing the "Show" button, Server Name input, "Play [Server Name]" cyan button, and "Remove [Server Name]" button.
+    *   **Expanded View**: Show "Hide", Server Name input, Play, Remove. Below it, show the "Client Path:" row, the Accounts table, and the "Add Account" button inside a distinct nested layout.
+*   **[MODIFY]**: **Footer Rendering**: Rebuild the bottom row. It must contain the massive cyan "Start X accounts" button on the left, followed by "Add Server", "Save and Close", and "Show Log" buttons aligned horizontally. The launch log should appear seamlessly at the bottom left.
+*   **[MODIFY]**: **Event Listeners**: Bind the new toggles ("Show"/"Hide"), the new Delay `-` / `+` buttons, and the "Save and Close" action.
 
 ## Verification Plan
-
-### Automated Tests
-- No existing automated tests were found.
-
-### Manual Verification
-1. Launch the application `python perfect_world_launcher_v24.0.py`.
-2. Add a new server or use an existing one.
-3. Configure the `Client Path` to point to a valid (or mocked) `elementclient.exe`.
-   - Test Case 1: `C:\Games\PW New History 1.8.7\element\x64\ElementClient_64.exe`
-   - Test Case 2: `C:\Games\PW New History 1.8.7\element\ElementClient.exe`
-4. Click the "Launcher <Server>" button.
-5. Verify in the Log panel that the application correctly resolved the path to `C:\Games\PW New History 1.8.7\launcher\Launcher.exe`.
-6. Verify that the correct executable is started (if it exists on disk).
+*   **Automated Verification**: Build process ensures no TypeScript compilation errors occur with the updated models and state structure.
+*   **Manual UI Matching**: Start the app, expand one server, collapse another, and place the application window side-by-side with the reference screenshot. Verify colors, borders, toggles, button shapes, and flex-gaps match the reference.
