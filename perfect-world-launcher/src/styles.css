@@ -126,6 +126,13 @@ main.content-area {
   gap: 12px;
 }
 
+main.content-area::after {
+  content: "";
+  display: block;
+  min-height: 12px;
+  flex-shrink: 0;
+}
+
 footer {
   background: var(--bg-bottombar);
   border-top: 1px solid var(--border-subtle);
@@ -278,6 +285,7 @@ input:focus {
   margin-bottom: 12px;
   box-shadow: var(--shadow-lg);
   transition: none;
+  flex-shrink: 0;
 }
 
 .server-card.interactive {
@@ -477,7 +485,8 @@ input:focus {
     padding-top: 0;
     padding-bottom: 0;
     margin-top: 0;
-    margin-bottom: -12px; /* Compensate for flex gap */
+    margin-bottom: -12px;
+    /* Compensate for flex gap */
   }
 }
 
