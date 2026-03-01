@@ -434,6 +434,7 @@ input:focus {
     max-height: 0;
     padding-top: 0;
     padding-bottom: 0;
+    margin-top: 0;
     margin-bottom: 0;
     border-color: transparent;
   }
@@ -441,9 +442,10 @@ input:focus {
   100% {
     opacity: 1;
     transform: translateY(0);
-    max-height: 200px;
+    max-height: 500px;
     padding-top: 24px;
     padding-bottom: 24px;
+    margin-top: 0;
     margin-bottom: 12px;
     border-color: var(--border-subtle);
   }
@@ -466,6 +468,7 @@ input:focus {
     max-height: var(--removal-height, 500px);
     padding-top: 24px;
     padding-bottom: 24px;
+    margin-top: 0;
     margin-bottom: 12px;
   }
 
@@ -473,7 +476,8 @@ input:focus {
     max-height: 0;
     padding-top: 0;
     padding-bottom: 0;
-    margin-bottom: 0;
+    margin-top: 0;
+    margin-bottom: -12px; /* Compensate for flex gap */
   }
 }
 

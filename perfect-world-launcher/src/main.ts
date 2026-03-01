@@ -383,23 +383,71 @@ function attachListeners() {
             const idx = parseInt(btnEl.getAttribute("data-srv")!);
 
             const card = btnEl.closest(".server-card") as HTMLElement;
+            const serverListEl = document.getElementById("server-list");
+
             if (card) {
-                currentState.servers[idx]._removeHeight = card.offsetHeight;
+                // Get rect before touching anything
+                const rect = card.getBoundingClientRect();
+
+                // Create a fixed clone for the visual fade out on top of everything
+                const clone = card.cloneNode(true) as HTMLElement;
+                clone.style.position = 'fixed';
+                clone.style.top = `${rect.top}px`;
+                clone.style.left = `${rect.left}px`;
+                clone.style.width = `${rect.width}px`;
+                clone.style.height = `${rect.height}px`;
+                clone.style.margin = '0';
+                clone.style.zIndex = '100';
+                clone.style.pointerEvents = 'none';
+                document.body.appendChild(clone);
+
+                // Hide original card's visible content but KEEP its physical space exactly as is
+                card.style.visibility = 'hidden';
+                card.style.height = `${rect.height}px`;
+                card.style.minHeight = `${rect.height}px`;
+                card.style.overflow = 'hidden';
+                card.style.transition = "all 400ms var(--md-sys-motion-easing-emphasized)";
+
+                // 1. Kick off the fade on the ghost clone using Web Animations API
+                const fadeAnimation = clone.animate([
+                    { opacity: 1 },
+                    { opacity: 0 }
+                ], {
+                    duration: 400,
+                    easing: 'cubic-bezier(0.2, 0.0, 0, 1.0)', // MD emphasize
+                    fill: 'forwards'
+                });
+
+                // 2. Wait for fade to finish, then collapse the original card's space
+                fadeAnimation.onfinish = () => {
+                    if (document.body.contains(clone)) clone.remove();
+                    card.style.minHeight = '0px';
+                    card.style.height = '0px';
+                    card.style.paddingTop = '0px';
+                    card.style.paddingBottom = '0px';
+                    card.style.marginTop = '0px';
+                    card.style.marginBottom = '-12px'; // compensate for flex gap
+                    card.style.border = 'none';
+                };
             }
 
-            currentState.servers[idx]._isRemoving = true;
-            render();
+            const removingServer = currentState.servers[idx];
+            removingServer._isRemoving = true;
+            // Native render runs after total animation time (400ms + 400ms + buffer)
             setTimeout(() => {
-                currentState.servers.splice(idx, 1);
-                // Adjust expandedServers indexes backwards
-                const newExpanded = new Set<number>();
-                expandedServers.forEach(v => {
-                    if (v < idx) newExpanded.add(v);
-                    if (v > idx) newExpanded.add(v - 1);
-                });
-                expandedServers = newExpanded;
+                const actualIdx = currentState.servers.indexOf(removingServer);
+                if (actualIdx !== -1) {
+                    currentState.servers.splice(actualIdx, 1);
+                    // Adjust expandedServers indexes backwards
+                    const newExpanded = new Set<number>();
+                    expandedServers.forEach(v => {
+                        if (v < actualIdx) newExpanded.add(v);
+                        if (v > actualIdx) newExpanded.add(v - 1);
+                    });
+                    expandedServers = newExpanded;
+                }
                 render();
-            }, 800); // Wait for transition
+            }, 850); // Wait for transition
         });
     });
 
@@ -420,16 +468,72 @@ function attachListeners() {
 
     document.querySelectorAll(".btn-del-acc").forEach(btn => {
         btn.addEventListener("click", (e) => {
-            const srv = parseInt((e.target as HTMLElement).getAttribute("data-srv")!);
-            const acc = parseInt((e.target as HTMLElement).getAttribute("data-acc")!);
-            currentState.servers[srv].accounts[acc]._isRemoving = true;
-            render();
+            const btnEl = e.target as HTMLElement;
+            const srv = parseInt(btnEl.getAttribute("data-srv")!);
+            const acc = parseInt(btnEl.getAttribute("data-acc")!);
+
+            const server = currentState.servers[srv];
+            if (!server || !server.accounts[acc]) return;
+
+            const accountRow = btnEl.closest(".account-row") as HTMLElement;
+            if (accountRow) {
+                // Get rect before touching anything
+                const rect = accountRow.getBoundingClientRect();
+
+                // Create a fixed ghost clone for the visual fade
+                const clone = accountRow.cloneNode(true) as HTMLElement;
+                clone.style.position = 'fixed';
+                clone.style.top = `${rect.top}px`;
+                clone.style.left = `${rect.left}px`;
+                clone.style.width = `${rect.width}px`;
+                clone.style.height = `${rect.height}px`;
+                clone.style.margin = '0';
+                clone.style.zIndex = '100';
+                clone.style.pointerEvents = 'none';
+                document.body.appendChild(clone);
+
+                // Hide original row's visible content but lock its physical space
+                accountRow.style.visibility = 'hidden';
+                accountRow.style.height = `${rect.height}px`;
+                accountRow.style.minHeight = `${rect.height}px`;
+                accountRow.style.overflow = 'hidden';
+                accountRow.style.transition = "all 400ms var(--md-sys-motion-easing-emphasized)";
+
+                // 1. Start the fade out on the clone using Web Animations API
+                const fadeAnimation = clone.animate([
+                    { opacity: 1 },
+                    { opacity: 0 }
+                ], {
+                    duration: 400,
+                    easing: 'cubic-bezier(0.2, 0.0, 0, 1.0)',
+                    fill: 'forwards'
+                });
+
+                // 2. Wait for fade to finish, then securely collapse the original space
+                fadeAnimation.onfinish = () => {
+                    if (document.body.contains(clone)) clone.remove();
+                    accountRow.style.minHeight = '0px';
+                    accountRow.style.height = '0px';
+                    accountRow.style.paddingTop = '0px';
+                    accountRow.style.paddingBottom = '0px';
+                    accountRow.style.marginTop = '0px';
+                    accountRow.style.marginBottom = '-12px'; // compensate for grid/flex gap
+                    accountRow.style.border = 'none';
+                };
+            }
+
+            const removingAccount = server.accounts[acc];
+            removingAccount._isRemoving = true;
+            // Native replacement finishes after full animation (400ms + 400ms + buffer)
             setTimeout(() => {
                 if (currentState.servers[srv]) {
-                    currentState.servers[srv].accounts.splice(acc, 1);
+                    const actualAccIdx = server.accounts.indexOf(removingAccount);
+                    if (actualAccIdx !== -1) {
+                        server.accounts.splice(actualAccIdx, 1);
+                    }
                     render();
                 }
-            }, 800);
+            }, 850);
         });
     });
 
